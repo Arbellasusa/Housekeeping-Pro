@@ -256,14 +256,15 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 <div class="overlay gone" id="wa-modal">
   <div class="modal">
     <div class="modal-title">📱 Números WhatsApp</div>
-    <div class="modal-sub">Números con código de país, sin espacios.<br>Ej: <code>+18095551234</code> o <code>+34612345678</code></div>
+    <div class="modal-sub">Números con código de país, sin espacios.<br>Ej: <code>+18095551234</code> · Para el grupo: número O link <code>https://chat.whatsapp.com/...</code></div>
     <div class="fg"><label class="fl">📦 Almacenero</label><input class="fi" id="wm-alm" type="tel" placeholder="+18095551234"></div>
     <div class="fg"><label class="fl">👔 Supervisor</label><input class="fi" id="wm-sup" type="tel" placeholder="+18095551234"></div>
     <div class="fg"><label class="fl">🔧 Mantenimiento</label><input class="fi" id="wm-mnt" type="tel" placeholder="+18095551234"></div>
-    <div class="fg"><label class="fl">💬 Link grupo WhatsApp</label><input class="fi" id="wm-grp" placeholder="https://chat.whatsapp.com/..."></div>
+    <div class="fg"><label class="fl">🛎 Recepción</label><input class="fi" id="wm-rec" type="tel" placeholder="+18095551234"></div>
+    <div class="fg"><label class="fl">💬 Grupo WA — número o link de invitación</label><input class="fi" id="wm-grp" placeholder="+18095551234  ó  https://chat.whatsapp.com/..."></div>
     <div style="display:flex;gap:8px;margin-top:13px">
       <button class="sb full n" onclick="closeModal('wa-modal')">Cancelar</button>
-      <button class="sb full wa" onclick="saveWANums()">💾 Guardar</button>
+      <button class="sb full wa" onclick="saveWANums()">💾 Guardar todos</button>
     </div>
   </div>
 </div>
@@ -426,7 +427,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <div class="card">
           <div class="ct" style="margin-bottom:11px">Añadir / actualizar contacto</div>
           <div class="fr"><div class="fg"><label class="fl">Nombre</label><input class="fi" id="c-name" placeholder="Nombre"></div><div class="fg"><label class="fl">Rol</label><select class="fs" id="c-role"><option value="almacenero">🏪 Almacenero</option><option value="supervisor">👔 Supervisor</option><option value="mantenimiento">🔧 Mantenimiento</option><option value="grupo">💬 Grupo WA</option></select></div></div>
-          <div class="fg"><label class="fl">Número (con código país)</label><input class="fi" id="c-phone" type="tel" placeholder="+18095551234"></div>
+          <div class="fg"><label class="fl">Número WA o link de grupo</label><input class="fi" id="c-phone" type="text" placeholder="+18095551234  ó  https://chat.whatsapp.com/..."></div>
           <button class="sb full g" onclick="saveContact()">✓ Guardar contacto</button>
         </div>
       </div>
@@ -541,7 +542,7 @@ const LS = {
 // ── State ─────────────────────────────────────
 let USER  = LS.g('user')  || null;
 let CFG   = LS.g('cfg')   || { hotelName:'Mi Hotel', floors:4, rpp:15, shifts:['07:00','15:00'] };
-let WA    = LS.g('wa')    || { almacenero:'', supervisor:'', mantenimiento:'', grupoLink:'' };
+let WA    = LS.g('wa')    || { almacenero:'', supervisor:'', mantenimiento:'', recepcion:'', grupoLink:'' };
 let STATE = LS.g('state') || {
   requests:[], products:defProds(), chatMsgs:[], movements:[],
   lastSync:0, deviceId:'dev_'+Math.random().toString(36).slice(2,8)
@@ -698,25 +699,31 @@ function updateFBCard(ok, errMsg=''){
 // Construye la URL wa.me correcta
 function waURL(target, text){
   let phone = '';
-  if(target === 'almacenero')      phone = WA.almacenero || '+17547364333';
-  else if(target === 'supervisor') phone = WA.supervisor || '';
+  if(target === 'almacenero')         phone = WA.almacenero    || '';
+  else if(target === 'supervisor')    phone = WA.supervisor    || '';
   else if(target === 'mantenimiento') phone = WA.mantenimiento || '';
-  else if(target === 'grupo') phone = WA.grupo || '+13058965758';
+  else if(target === 'recepcion')     phone = WA.recepcion     || '';
   else if(target === 'grupo'){
-    if(WA.grupoLink) return WA.grupoLink;
-    toast('⚠️ Configura el link del grupo en Config → WhatsApp'); return null;
+    const val = WA.grupoLink || '';
+    if(!val){ toast('⚠️ Configura el Grupo WA en Config → WhatsApp → Guardar contacto'); return null; }
+    // Si es un link de grupo (https://chat.whatsapp.com/...) abrir directo
+    if(val.startsWith('http')) return val;
+    // Si es un número, construir wa.me
+    phone = val;
   } else {
-    // target es un número directo
+    // target puede ser un número directo pasado como string
     phone = target;
   }
-  phone = phone.trim().replace(/[\s\-()]/g,'');
+
+  phone = (phone || '').trim().replace(/[\s\-().]/g, '');
   if(!phone){
     toast('⚠️ Número no configurado. Ve a Config → WhatsApp 📱');
     return null;
   }
-  // Normalizar: wa.me acepta el + en el número
-  const enc = text ? '?text=' + encodeURIComponent(text) : '';
-  return 'https://wa.me/' + phone.replace(/^\+/,'') + enc;
+  // wa.me acepta el número con o sin +, siempre quitar el + para la URL
+  const clean = phone.replace(/^\+/, '');
+  const enc   = text ? '?text=' + encodeURIComponent(text) : '';
+  return 'https://wa.me/' + clean + enc;
 }
 
 function openWA(target, text){
@@ -1052,20 +1059,32 @@ function sendChat(){
 function qmsg(t){ addChat('Equipo HK',t,true); save(); if(document.getElementById('p-chat').classList.contains('on'))renderWAMsgs(); }
 document.getElementById('wa-in').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
 
+function testWA(key){
+  const msgMap = {
+    almacenero:    '📦 *Test almacenero* — HK Pro funcionando ✅',
+    supervisor:    '👔 *Test supervisor* — HK Pro funcionando ✅',
+    mantenimiento: '🔧 *Test mantenimiento* — HK Pro funcionando ✅',
+    recepcion:     '🛎 *Test recepción* — HK Pro funcionando ✅',
+    grupo:         '💬 *Test grupo* — HK Pro funcionando ✅',
+  };
+  openWA(key, msgMap[key] || 'Test HK Pro ✅');
+}
+
 function renderDirectWA(){
   const el=document.getElementById('direct-wa'); if(!el)return;
   const items=[
-    {label:'📦 Almacenero',   key:'almacenero',    num:WA.almacenero},
-    {label:'👔 Supervisor',    key:'supervisor',    num:WA.supervisor},
-    {label:'🔧 Mantenimiento', key:'mantenimiento', num:WA.mantenimiento},
+    {label:'📦 Almacenero',    key:'almacenero',    num:WA.almacenero},
+    {label:'👔 Supervisor',     key:'supervisor',    num:WA.supervisor},
+    {label:'🔧 Mantenimiento',  key:'mantenimiento', num:WA.mantenimiento},
+    {label:'🛎 Recepción',      key:'recepcion',     num:WA.recepcion},
   ];
-  if(WA.grupoLink) items.push({label:'💬 Grupo HK WA', key:'grupo', num:'(enlace grupo)'});
+  if(WA.grupoLink) items.push({label:'💬 Grupo HK WA', key:'grupo', num:WA.grupoLink});
   el.innerHTML=items.map(c=>`
     <div class="crow">
       <div class="cico">${c.label.split(' ')[0]}</div>
       <div class="cbod">
         <div class="cnam">${c.label.slice(3)}</div>
-        <div class="cnum">${c.num||'⚠️ No configurado'}</div>
+        <div class="cnum" style="color:${c.num?'var(--n500)':'var(--rm)'};">${c.num||'⚠️ No configurado'}</div>
       </div>
       <button class="sb wa" onclick="openWA('${c.key}','👋 Hola! Soy ${USER?.name||''} de ${CFG.hotelName}. Te escribo desde HK Pro.')" ${!c.num?'disabled style="opacity:.4"':''}>Abrir WA</button>
     </div>`).join('');
@@ -1086,45 +1105,66 @@ function swCfg(t){
 function renderWANums(){
   const el=document.getElementById('wa-nums-list'); if(!el)return;
   const items=[
-    {label:'📦 Almacenero',   val:WA.almacenero},
-    {label:'👔 Supervisor',    val:WA.supervisor},
-    {label:'🔧 Mantenimiento', val:WA.mantenimiento},
-    {label:'💬 Link grupo',    val:WA.grupoLink},
+    {label:'📦 Almacenero',    val:WA.almacenero,    key:'almacenero'},
+    {label:'👔 Supervisor',     val:WA.supervisor,    key:'supervisor'},
+    {label:'🔧 Mantenimiento',  val:WA.mantenimiento, key:'mantenimiento'},
+    {label:'🛎 Recepción',      val:WA.recepcion,     key:'recepcion'},
+    {label:'💬 Grupo WA',       val:WA.grupoLink,     key:'grupo'},
   ];
   el.innerHTML=items.map(it=>`
     <div class="crow">
       <div class="cico">${it.label.split(' ')[0]}</div>
       <div class="cbod">
         <div class="cnam">${it.label.slice(3)}</div>
-        <div class="cnum" style="color:${it.val?'var(--n500)':'var(--rm)'}">${it.val||'⚠️ Sin configurar'}</div>
+        <div class="cnum" style="color:${it.val?'var(--n500)':'var(--rm)'};word-break:break-all">${it.val||'⚠️ Sin configurar'}</div>
       </div>
+      ${it.val?`<button class="sb wa" onclick="testWA('${it.key}')">Test</button>`:''}
     </div>`).join('');
 }
 
-function openModal(id){ document.getElementById(id).classList.remove('gone'); }
+function openModal(id){
+  document.getElementById(id).classList.remove('gone');
+  // Pre-fill WA modal with existing values
+  if(id === 'wa-modal'){
+    document.getElementById('wm-alm').value = WA.almacenero    || '';
+    document.getElementById('wm-sup').value = WA.supervisor    || '';
+    document.getElementById('wm-mnt').value = WA.mantenimiento || '';
+    document.getElementById('wm-rec').value = WA.recepcion     || '';
+    document.getElementById('wm-grp').value = WA.grupoLink     || '';
+  }
+}
 function closeModal(id){ document.getElementById(id).classList.add('gone'); }
 function saveWANums(){
   WA.almacenero    = document.getElementById('wm-alm').value.trim();
   WA.supervisor    = document.getElementById('wm-sup').value.trim();
   WA.mantenimiento = document.getElementById('wm-mnt').value.trim();
+  WA.recepcion     = document.getElementById('wm-rec').value.trim();
   WA.grupoLink     = document.getElementById('wm-grp').value.trim();
   LS.s('wa', WA);
   closeModal('wa-modal');
   renderWANums(); renderDirectWA();
-  toast('✅ Números guardados');
+  toast('✅ Todos los números guardados');
 }
 
 function saveContact(){
-  const name=document.getElementById('c-name').value.trim();
-  const role=document.getElementById('c-role').value;
-  const phone=document.getElementById('c-phone').value.trim();
-  if(!name||!phone){toast('⚠️ Nombre y número obligatorios');return;}
-  if(role==='almacenero')    WA.almacenero=phone;
-  if(role==='supervisor')    WA.supervisor=phone;
-  if(role==='mantenimiento') WA.mantenimiento=phone;
-  LS.s('wa',WA);
-  ['c-name','c-phone'].forEach(x=>document.getElementById(x).value='');
-  toast('✅ Contacto guardado'); renderWANums(); renderDirectWA();
+  const name  = document.getElementById('c-name').value.trim();
+  const role  = document.getElementById('c-role').value;
+  const phone = document.getElementById('c-phone').value.trim();
+  if(!name || !phone){ toast('⚠️ Nombre y número/link obligatorios'); return; }
+  // Guardar según rol
+  if(role === 'almacenero')    WA.almacenero    = phone;
+  if(role === 'supervisor')    WA.supervisor    = phone;
+  if(role === 'mantenimiento') WA.mantenimiento = phone;
+  if(role === 'recepcion')     WA.recepcion     = phone;
+  if(role === 'grupo'){
+    // Acepta número de teléfono (+18091234567) O link de grupo (https://chat.whatsapp.com/...)
+    if(phone.startsWith('http')){ WA.grupoLink = phone; }
+    else { WA.grupoLink = phone; } // también acepta número para grupos de broadcast
+  }
+  LS.s('wa', WA);
+  ['c-name','c-phone'].forEach(x => document.getElementById(x).value = '');
+  toast('✅ ' + name + ' guardado como ' + role); 
+  renderWANums(); renderDirectWA();
 }
 
 function renderDevsList(devs){
