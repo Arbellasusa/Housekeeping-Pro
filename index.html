@@ -16,7 +16,7 @@
 <!-- Firebase SDKs (compat — funcionan directamente en el navegador sin npm) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<title>HK Pro — Hyde Housekeeping</title>
+<title>HK Pro — Housekeeping</title>
 <style>
 /* ═══ RESET + VARIABLES ════════════════════════ */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -202,11 +202,11 @@ html,body{font-family:var(--f);background:var(--bg);color:var(--n900);min-height
 .fb-status{display:flex;align-items:center;gap:9px;padding:10px;border-radius:var(--rs);margin-bottom:11px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12)}
 
 /* ═══ WA NUMBER MODAL ══════════════════════════ */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;display:flex;align-items:flex-end;justify-content:center;padding:0}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
 .overlay.gone{display:none}
-.modal{background:#fff;border-radius:var(--rad) var(--rad) 0 0;padding:20px 20px calc(var(--sab)+24px);width:100%;max-width:430px;max-height:92vh;overflow-y:auto}
-.modal-title{font-size:17px;font-weight:700;margin-bottom:5px}
-.modal-sub{font-size:12px;color:var(--n500);margin-bottom:14px;line-height:1.55}
+.modal{background:#fff;border-radius:var(--rad);padding:20px;width:100%;max-width:360px}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--n500);margin-bottom:16px;line-height:1.5}
 
 /* ═══ MISC ═════════════════════════════════════ */
 .divider{height:1px;background:var(--n200);margin:11px 0}
@@ -242,7 +242,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   </div>
   <div class="s-card" style="margin-bottom:20px">
     <label class="s-lbl">Código del hotel</label>
-    <input class="s-inp" id="su-code" placeholder="HOTEL_001" value="HYDE_HOTEL" autocomplete="off">
+    <input class="s-inp" id="su-code" placeholder="HOTEL_001" value="HOTEL_001" autocomplete="off">
     <div class="s-hint">Todos los móviles con el mismo código ven los datos en tiempo real</div>
   </div>
   <button class="s-btn" onclick="startApp()">
@@ -261,13 +261,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     <div class="fg"><label class="fl">👔 Supervisor</label><input class="fi" id="wm-sup" type="tel" placeholder="+18095551234"></div>
     <div class="fg"><label class="fl">🔧 Mantenimiento</label><input class="fi" id="wm-mnt" type="tel" placeholder="+18095551234"></div>
     <div class="fg"><label class="fl">🛎 Recepción</label><input class="fi" id="wm-rec" type="tel" placeholder="+18095551234"></div>
-    <div class="fg">
-      <label class="fl">💬 Hyde Housekeeping Team — número o link del grupo</label>
-      <textarea class="fi" id="wm-grp" style="height:64px;padding:9px 11px;resize:none;line-height:1.4" placeholder="+18095551234&#10;ó&#10;https://chat.whatsapp.com/..." inputmode="url" autocomplete="off"></textarea>
-      <div style="font-size:10px;color:var(--n400);margin-top:4px">Pega el número (ej: +18091234567) o el link de invitación del grupo WhatsApp</div>
-    </div>
+    <div class="fg"><label class="fl">💬 Grupo WA — número o link de invitación</label><input class="fi" id="wm-grp" placeholder="+18095551234  ó  https://chat.whatsapp.com/..."></div>
     <div style="display:flex;gap:8px;margin-top:13px">
-      <button class="sb full n" onclick="closeWAModal()">Cancelar</button>
+      <button class="sb full n" onclick="closeModal('wa-modal')">Cancelar</button>
       <button class="sb full wa" onclick="saveWANums()">💾 Guardar todos</button>
     </div>
   </div>
@@ -421,7 +417,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <!-- WhatsApp -->
       <div id="cfg-wa">
         <div class="card">
-          <div class="ch"><span class="ct">Números WhatsApp</span><button class="ca" onclick="openWAModal()">✏️ Editar</button></div>
+          <div class="ch"><span class="ct">Números WhatsApp</span><button class="ca" onclick="openModal('wa-modal')">✏️ Editar</button></div>
           <div id="wa-nums-list"></div>
           <div class="info-box amber" style="margin-top:10px">
             <strong>Formato correcto:</strong> incluye el código de país sin espacios.<br>
@@ -538,9 +534,9 @@ const FB_CONFIG = {
 
 // ── LocalStorage helpers ──────────────────────
 const LS = {
-  g: k => { try{ return JSON.parse(localStorage.getItem('hkp5_'+k)); }catch{ return null; } },
-  s: (k,v) => { try{ localStorage.setItem('hkp5_'+k, JSON.stringify(v)); }catch{} },
-  rm: k => localStorage.removeItem('hkp5_'+k)
+  g: k => { try{ return JSON.parse(localStorage.getItem('hkp4_'+k)); }catch{ return null; } },
+  s: (k,v) => { try{ localStorage.setItem('hkp4_'+k, JSON.stringify(v)); }catch{} },
+  rm: k => localStorage.removeItem('hkp4_'+k)
 };
 
 // ── State ─────────────────────────────────────
@@ -703,12 +699,12 @@ function updateFBCard(ok, errMsg=''){
 // Construye la URL wa.me correcta
 function waURL(target, text){
   let phone = '';
-  if(target === 'almacenero')         phone = WA.almacenero    || '+17547364333';
+  if(target === 'almacenero')         phone = WA.almacenero    || '';
   else if(target === 'supervisor')    phone = WA.supervisor    || '';
   else if(target === 'mantenimiento') phone = WA.mantenimiento || '';
   else if(target === 'recepcion')     phone = WA.recepcion     || '';
   else if(target === 'grupo'){
-    const val = WA.grupoLink || '+13058965758';
+    const val = WA.grupoLink || '';
     if(!val){ toast('⚠️ Configura el Grupo WA en Config → WhatsApp → Guardar contacto'); return null; }
     // Si es un link de grupo (https://chat.whatsapp.com/...) abrir directo
     if(val.startsWith('http')) return val;
@@ -1128,45 +1124,26 @@ function renderWANums(){
 
 function openModal(id){
   document.getElementById(id).classList.remove('gone');
+  // Pre-fill WA modal with existing values
   if(id === 'wa-modal'){
     document.getElementById('wm-alm').value = WA.almacenero    || '';
     document.getElementById('wm-sup').value = WA.supervisor    || '';
     document.getElementById('wm-mnt').value = WA.mantenimiento || '';
     document.getElementById('wm-rec').value = WA.recepcion     || '';
-    // FIX: textarea — .value works for both input and textarea
     document.getElementById('wm-grp').value = WA.grupoLink     || '';
-    // Auto-focus the grupo field if empty so user can type immediately
-    if(!WA.grupoLink){
-      setTimeout(()=>{ const g=document.getElementById('wm-grp'); if(g)g.focus(); }, 350);
-    }
   }
 }
-// Alias used in HTML buttons
-function openWAModal(){ openModal('wa-modal'); }
-function closeWAModal(){ closeModal('wa-modal'); }
 function closeModal(id){ document.getElementById(id).classList.add('gone'); }
 function saveWANums(){
-  // FIX: read each field — textarea.value works fine for grupoLink
-  WA.almacenero    = (document.getElementById('wm-alm').value || '').trim();
-  WA.supervisor    = (document.getElementById('wm-sup').value || '').trim();
-  WA.mantenimiento = (document.getElementById('wm-mnt').value || '').trim();
-  WA.recepcion     = (document.getElementById('wm-rec').value || '').trim();
-  // grupoLink: may be a phone number (+18091234567) or a WA group link
-  WA.grupoLink     = (document.getElementById('wm-grp').value || '').trim();
-  // FIX: persist to localStorage
+  WA.almacenero    = document.getElementById('wm-alm').value.trim();
+  WA.supervisor    = document.getElementById('wm-sup').value.trim();
+  WA.mantenimiento = document.getElementById('wm-mnt').value.trim();
+  WA.recepcion     = document.getElementById('wm-rec').value.trim();
+  WA.grupoLink     = document.getElementById('wm-grp').value.trim();
   LS.s('wa', WA);
   closeModal('wa-modal');
-  renderWANums();
-  renderDirectWA();
-  // Confirm what was saved
-  const saved = [
-    WA.almacenero    && '📦',
-    WA.supervisor    && '👔',
-    WA.mantenimiento && '🔧',
-    WA.recepcion     && '🛎',
-    WA.grupoLink     && '💬'
-  ].filter(Boolean).join(' ');
-  toast('✅ Guardado: ' + (saved || 'ningún número'));
+  renderWANums(); renderDirectWA();
+  toast('✅ Todos los números guardados');
 }
 
 function saveContact(){
@@ -1279,11 +1256,6 @@ function toast(msg,dur=2400){
 }
 
 // ── Service Worker ─────────────────────────────
-// Close WA modal by tapping dark backdrop
-document.getElementById('wa-modal').addEventListener('click', function(e){
-  if(e.target === this) closeWAModal();
-});
-
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 
 // ── iOS install hint ───────────────────────────
