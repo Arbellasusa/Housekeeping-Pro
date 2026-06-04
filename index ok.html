@@ -1,0 +1,2453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HK Pro">
+<meta name="theme-color" content="#0f172a">
+<meta name="description" content="Hyde House Hotel — Sistema de Gestión Housekeeping Enterprise">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="public/icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="public/icons/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<!-- jsPDF for PDF generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Chart.js for dashboard -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- HK Pro Enterprise v2.0 — Hyde House Hotel, 4111 S Ocean Dr, Hollywood FL -->
+<title>HK Pro Enterprise — Hyde House Hotel</title>
+<style>
+/* ═══════════════════════════════════════════════════
+   DESIGN SYSTEM — Hyde House Hotel
+   4111 South Ocean Drive, Hollywood FL
+   ═══════════════════════════════════════════════════ */
+:root {
+  /* Brand */
+  --gold:    #c9a84c;
+  --gold-l:  #f0d890;
+  --gold-d:  #8a6c28;
+  --navy:    #0f172a;
+  --navy-m:  #1e293b;
+  --navy-l:  #334155;
+  /* Semantic */
+  --green:   #059669; --green-l:#d1fae5; --green-p:#ecfdf5;
+  --amber:   #d97706; --amber-l:#fef3c7; --amber-p:#fffbeb;
+  --red:     #dc2626; --red-l:  #fee2e2; --red-p:  #fff5f5;
+  --blue:    #2563eb; --blue-l: #dbeafe; --blue-p: #eff6ff;
+  --purple:  #7c3aed; --purp-l: #ede9fe; --purp-p: #f5f3ff;
+  /* Neutral */
+  --n0:#fff;--n50:#f8fafc;--n100:#f1f5f9;--n200:#e2e8f0;
+  --n300:#cbd5e1;--n400:#94a3b8;--n500:#64748b;
+  --n600:#475569;--n700:#334155;--n800:#1e293b;--n900:#0f172a;
+  /* UI */
+  --bg:var(--n50);--surf:var(--n0);--border:var(--n200);
+  --text:var(--n900);--text-2:var(--n600);--text-3:var(--n400);
+  --rad:14px;--rad-sm:8px;--rad-lg:20px;
+  --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+  --sh-sm:0 1px 2px rgba(0,0,0,.05);
+  --sh:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+  --sh-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);
+  --sh-lg:0 10px 15px rgba(0,0,0,.1),0 4px 6px rgba(0,0,0,.05);
+  --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
+  --sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px);
+}
+/* Dark mode */
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:var(--n900);--surf:var(--n800);--border:var(--n700);
+    --text:var(--n50);--text-2:var(--n400);--text-3:var(--n600);
+    --n50:#0f172a;--n100:#1e293b;--n200:#334155;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{
+  font-family:var(--font);background:var(--bg);color:var(--text);
+  min-height:100vh;overscroll-behavior:none;-webkit-font-smoothing:antialiased;
+}
+
+/* ── AUTH SCREEN ─────────────────────────────── */
+#auth-screen{
+  position:fixed;inset:0;z-index:2000;
+  background:linear-gradient(135deg,var(--navy) 0%,#1a2744 50%,var(--navy-m) 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;color:#fff;
+}
+#auth-screen.gone{display:none}
+.auth-logo{width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,var(--gold),var(--gold-d));display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:16px;box-shadow:0 8px 24px rgba(201,168,76,.3)}
+.auth-hotel{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.auth-addr{font-size:12px;opacity:.5;margin-bottom:32px;text-align:center}
+.auth-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:var(--rad-lg);padding:24px;width:100%;max-width:360px;backdrop-filter:blur(10px)}
+.auth-tab{display:flex;gap:3px;background:rgba(0,0,0,.2);border-radius:10px;padding:3px;margin-bottom:20px}
+.auth-tab-btn{flex:1;height:34px;border-radius:8px;border:none;background:none;color:rgba(255,255,255,.5);font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;transition:all .2s}
+.auth-tab-btn.on{background:#fff;color:var(--navy);box-shadow:var(--sh-sm)}
+.auth-field{margin-bottom:14px}
+.auth-label{font-size:11px;font-weight:600;opacity:.6;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px}
+.auth-input{width:100%;height:46px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:var(--rs,10px);padding:0 14px;font-size:15px;font-family:var(--font);color:#fff;outline:none;transition:border-color .2s}
+.auth-input::placeholder{opacity:.4}.auth-input:focus{border-color:var(--gold)}
+.auth-select{width:100%;height:46px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:10px;padding:0 14px;font-size:14px;font-family:var(--font);color:#fff;outline:none;appearance:none}
+.auth-select option{background:var(--navy);color:#fff}
+.auth-btn{width:100%;height:50px;background:linear-gradient(135deg,var(--gold),var(--gold-d));color:var(--navy);border:none;border-radius:10px;font-size:15px;font-weight:800;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;box-shadow:0 4px 14px rgba(201,168,76,.4);transition:all .2s}
+.auth-btn:active{transform:scale(.98)}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:14px 0;opacity:.3}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:#fff}
+.auth-divider span{font-size:11px}
+.auth-google{width:100%;height:44px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:10px;color:#fff;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px}
+.auth-err{font-size:12px;color:#f87171;margin-top:8px;text-align:center;min-height:18px}
+
+/* ── APP SHELL ───────────────────────────────── */
+#app{display:none;min-height:100vh;flex-direction:column}
+#app.visible{display:flex}
+
+/* ── SIDEBAR (desktop) + TOPBAR (mobile) ──────── */
+.topbar{
+  background:var(--navy);color:#fff;
+  padding:calc(var(--sat) + 11px) 16px 11px;
+  display:flex;align-items:center;gap:10px;
+  position:sticky;top:0;z-index:200;
+  box-shadow:0 1px 0 rgba(255,255,255,.06);
+}
+.topbar-logo{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-d));
+  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;
+}
+.topbar-info{flex:1;min-width:0}
+.topbar-hotel{font-size:14px;font-weight:700;letter-spacing:-.3px}
+.topbar-user{font-size:10px;opacity:.55;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.conn-badge{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.1);border-radius:20px;
+  padding:4px 9px;font-size:11px;font-weight:600;cursor:pointer;
+}
+.cdot{width:7px;height:7px;border-radius:50%;background:#f87171;flex-shrink:0}
+.cdot.on{background:#4ade80;animation:pulse 2s infinite}
+.cdot.sync{background:#fbbf24;animation:pulse .6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.clk{font-family:var(--mono);font-size:11px;font-weight:500;background:rgba(255,255,255,.1);border-radius:7px;padding:4px 8px}
+
+/* ── ROLE STRIP ───────────────────────────────── */
+.role-strip{
+  padding:6px 16px;font-size:12px;font-weight:600;
+  display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid var(--border);
+}
+.role-strip.housekeeper{background:#fef3c7;color:#92400e}
+.role-strip.almacenero{background:#dbeafe;color:#1e3a8a}
+.role-strip.supervisor{background:#ede9fe;color:#4c1d95}
+.role-strip.gerente,.role-strip.admin{background:linear-gradient(90deg,var(--navy),var(--navy-m));color:var(--gold)}
+.role-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* ── LAYOUT ───────────────────────────────────── */
+.content{flex:1;padding:14px 13px;overflow-x:hidden;overflow-y:auto}
+
+/* ── BOTTOM NAV ──────────────────────────────── */
+.bnav{
+  background:var(--surf);border-top:1px solid var(--border);
+  display:flex;padding:6px 0 calc(var(--sab)+6px);
+  position:sticky;bottom:0;z-index:200;
+}
+.nb{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:5px 2px;border:none;background:none;cursor:pointer;
+  color:var(--text-3);font-family:var(--font);position:relative;transition:color .15s;
+}
+.nb.on{color:var(--gold)}
+.nb svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nb span{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.2px}
+.nb-dot{position:absolute;top:3px;right:calc(50% - 15px);width:8px;height:8px;border-radius:50%;background:var(--red);border:2px solid var(--surf);display:none}
+.nb-dot.show{display:block}
+
+/* ── PANELS ──────────────────────────────────── */
+.panel{display:none;animation:fadeUp .18s ease}.panel.on{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── DASHBOARD ───────────────────────────────── */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.kpi{
+  background:var(--surf);border-radius:var(--rad);padding:13px;
+  box-shadow:var(--sh);position:relative;overflow:hidden;
+  border:1px solid var(--border);
+}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.gold::before{background:linear-gradient(90deg,var(--gold),var(--gold-l))}
+.kpi.green::before{background:var(--green)}
+.kpi.red::before{background:var(--red)}
+.kpi.blue::before{background:var(--blue)}
+.kpi.amber::before{background:var(--amber)}
+.kpi.purple::before{background:var(--purple)}
+.kpi-n{font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1;font-family:var(--mono)}
+.kpi-l{font-size:11px;color:var(--text-2);margin-top:3px;font-weight:500}
+.kpi.gold .kpi-n{color:var(--gold)}
+.kpi.green .kpi-n{color:var(--green)}
+.kpi.red .kpi-n{color:var(--red)}
+.kpi.blue .kpi-n{color:var(--blue)}
+.kpi.amber .kpi-n{color:var(--amber)}
+.kpi.purple .kpi-n{color:var(--purple)}
+.chart-card{background:var(--surf);border-radius:var(--rad);padding:14px;box-shadow:var(--sh);border:1px solid var(--border);margin-bottom:10px}
+
+/* ── CARDS ───────────────────────────────────── */
+.card{background:var(--surf);border-radius:var(--rad);box-shadow:var(--sh);padding:14px;margin-bottom:10px;border:1px solid var(--border)}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.card-title{font-size:12px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px}
+.card-action{font-size:12px;color:var(--gold);font-weight:600;cursor:pointer;background:none;border:none;font-family:var(--font)}
+
+/* ── FORM ────────────────────────────────────── */
+.fg{margin-bottom:11px}
+.fl{font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;display:block;letter-spacing:.2px}
+.fi,.fs{
+  width:100%;height:42px;
+  border:1.5px solid var(--border);border-radius:var(--rad-sm);
+  padding:0 11px;font-size:14px;font-family:var(--font);
+  color:var(--text);background:var(--surf);
+  outline:none;appearance:none;-webkit-appearance:none;
+  transition:border-color .15s,box-shadow .15s;
+}
+.fi:focus,.fs:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.15)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+.fi-textarea{width:100%;min-height:72px;border:1.5px solid var(--border);border-radius:var(--rad-sm);padding:9px 11px;font-size:14px;font-family:var(--font);color:var(--text);background:var(--surf);outline:none;resize:none;line-height:1.5;transition:border-color .15s}
+.fi-textarea:focus{border-color:var(--gold)}
+
+/* ── BUTTONS ─────────────────────────────────── */
+.btn-primary{
+  width:100%;height:50px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-d));
+  color:var(--navy);border:none;border-radius:var(--rad-sm);
+  font-size:15px;font-weight:800;font-family:var(--font);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 4px 12px rgba(201,168,76,.3);transition:all .15s;letter-spacing:-.2px;
+}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary.danger{background:linear-gradient(135deg,var(--red),#991b1b);color:#fff;box-shadow:0 4px 12px rgba(220,38,38,.3)}
+.btn-primary.navy{background:var(--navy);color:var(--gold);box-shadow:0 4px 12px rgba(15,23,42,.3)}
+.btn-primary.wa{background:linear-gradient(135deg,#25D366,#128C7E);color:#fff}
+
+.btn{
+  height:32px;padding:0 12px;border-radius:var(--rad-sm);
+  font-size:12px;font-weight:600;font-family:var(--font);
+  cursor:pointer;border:none;display:inline-flex;align-items:center;gap:5px;
+  transition:all .12s;white-space:nowrap;
+}
+.btn:active{transform:scale(.97)}
+.btn.g{background:var(--green-l);color:#065f46}
+.btn.r{background:var(--red-l);color:var(--red)}
+.btn.b{background:var(--blue-l);color:var(--blue)}
+.btn.y{background:var(--amber-l);color:var(--amber)}
+.btn.p{background:var(--purp-l);color:var(--purple)}
+.btn.n{background:var(--n100);color:var(--n600)}
+.btn.gold{background:rgba(201,168,76,.15);color:var(--gold-d)}
+.btn.wa{background:#dcfce7;color:#15803d}
+.btn.full{width:100%;justify-content:center;height:42px;font-size:13px}
+
+/* ── BADGES ──────────────────────────────────── */
+.bdg{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;gap:4px}
+.bdg.pending{background:var(--amber-l);color:var(--amber)}
+.bdg.approved{background:var(--blue-l);color:var(--blue)}
+.bdg.preparing{background:var(--purp-l);color:var(--purple)}
+.bdg.delivered{background:var(--green-l);color:var(--green)}
+.bdg.closed{background:var(--n100);color:var(--n600)}
+.bdg.ok{background:var(--green-l);color:var(--green)}
+.bdg.low{background:var(--amber-l);color:var(--amber)}
+.bdg.out{background:var(--red-l);color:var(--red)}
+.bdg.ug{background:var(--red-l);color:var(--red)}
+.bdg.live{background:#fef9c3;color:#713f12;animation:pulse 1.5s infinite}
+.bdg.gold{background:rgba(201,168,76,.15);color:var(--gold-d);border:1px solid rgba(201,168,76,.3)}
+
+/* ── REQUEST CARDS ───────────────────────────── */
+.req-card{
+  background:var(--surf);border-radius:var(--rad);
+  border:1px solid var(--border);padding:13px;
+  margin-bottom:8px;box-shadow:var(--sh-sm);
+  transition:box-shadow .15s;
+}
+.req-card:hover{box-shadow:var(--sh-md)}
+.req-card.urgent{border-left:3px solid var(--red)}
+.req-card-hdr{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.req-emo{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.req-info{flex:1;min-width:0}
+.req-title{font-size:13px;font-weight:700;line-height:1.3;color:var(--text)}
+.req-title.done{text-decoration:line-through;opacity:.5}
+.req-meta{font-size:11px;color:var(--text-2);margin-top:3px}
+.req-time{font-family:var(--mono);font-size:10px;color:var(--text-3);margin-top:2px}
+.req-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+
+/* ── INVENTORY CARDS ─────────────────────────── */
+.inv-section{margin-bottom:10px}
+.inv-section-hdr{
+  display:flex;align-items:center;gap:10px;padding:11px 13px;
+  background:var(--navy);border-radius:var(--rad) var(--rad) 0 0;color:#fff;cursor:pointer;
+}
+.inv-section-title{font-size:14px;font-weight:700;flex:1}
+.inv-section-badge{background:rgba(255,255,255,.15);border-radius:20px;font-size:11px;font-weight:700;padding:3px 9px}
+.inv-body{
+  background:var(--surf);border-radius:0 0 var(--rad) var(--rad);
+  border:1px solid var(--border);border-top:none;
+  max-height:0;overflow:hidden;transition:max-height .35s ease;
+}
+.inv-body.open{max-height:9999px}
+.inv-row{display:flex;align-items:center;gap:10px;padding:11px 13px;border-bottom:1px solid var(--n100)}
+.inv-row:last-child{border-bottom:none}
+.inv-row-left{flex:1;min-width:0}
+.inv-pname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv-psku{font-size:10px;color:var(--text-3);font-family:var(--mono);margin-top:2px}
+.inv-pmeta{font-size:11px;color:var(--text-2);margin-top:3px}
+.inv-right{text-align:right;flex-shrink:0}
+.inv-qty{font-size:22px;font-weight:800;font-family:var(--mono);letter-spacing:-.5px}
+.inv-unit{font-size:10px;color:var(--text-3)}
+.mini-bar{height:4px;border-radius:2px;background:var(--n200);overflow:hidden;width:56px;margin:4px 0 0 auto}
+.mini-fill{height:100%;border-radius:2px;transition:width .4s}
+
+/* ── KARDEX TABLE ────────────────────────────── */
+.kardex-table{width:100%;border-collapse:collapse;font-size:12px}
+.kardex-table th{font-size:10px;font-weight:700;color:var(--text-2);text-align:left;padding:7px 9px;background:var(--n100);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.4px;position:sticky;top:0;z-index:1}
+.kardex-table td{padding:8px 9px;border-bottom:1px solid var(--n100);color:var(--text);vertical-align:middle}
+.kardex-table tr:hover td{background:var(--n50)}
+.kardex-table tr:last-child td{border-bottom:none}
+
+/* ── CHAT ────────────────────────────────────── */
+.chat-wrap{background:#ECE5DD;border-radius:var(--rad);overflow:hidden;margin-bottom:10px}
+.chat-hdr{background:#075E54;padding:11px 13px;display:flex;align-items:center;gap:9px}
+.chat-av{width:36px;height:36px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.chat-title{font-size:13px;font-weight:700;color:#fff}
+.chat-sub{font-size:10px;color:rgba(255,255,255,.6);margin-top:1px}
+.chat-msgs{padding:9px;min-height:200px;max-height:320px;overflow-y:auto}
+.chat-bub{max-width:86%;padding:7px 11px;margin-bottom:5px;font-size:13px;line-height:1.45;border-radius:12px 12px 12px 3px;background:#fff;color:#111;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.chat-bub.out{background:#DCF8C6;border-radius:12px 12px 3px 12px;margin-left:auto}
+.chat-bub.sys{background:rgba(0,0,0,.07);border-radius:8px;margin:4px auto;text-align:center;font-size:11px;color:#555;max-width:78%}
+.chat-sender{font-size:10px;font-weight:700;color:#1D9E75;margin-bottom:2px}
+.chat-ts{font-size:9px;color:#888;text-align:right;margin-top:2px}
+.chat-input-row{background:#f0f0f0;padding:7px 9px;display:flex;gap:7px;align-items:center}
+.chat-input{flex:1;height:36px;border-radius:18px;border:none;padding:0 13px;font-size:13px;font-family:var(--font);background:#fff;outline:none;color:#111}
+.chat-send{width:36px;height:36px;border-radius:50%;background:#25D366;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* ── CHANNEL TABS ────────────────────────────── */
+.ch-tabs{display:flex;gap:5px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
+.ch-tab{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--border);cursor:pointer;background:none;color:var(--text-2);white-space:nowrap;transition:all .15s}
+.ch-tab.on{background:var(--navy);color:var(--gold);border-color:var(--navy)}
+
+/* ── MODAL ───────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:flex;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(4px)}
+.overlay.gone{display:none}
+.modal{background:var(--surf);border-radius:var(--rad-lg) var(--rad-lg) 0 0;padding:20px 20px calc(var(--sab)+24px);width:100%;max-width:430px;max-height:94vh;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.2)}
+.modal-handle{width:40px;height:4px;border-radius:2px;background:var(--n300);margin:0 auto 16px}
+.modal-title{font-size:18px;font-weight:800;margin-bottom:5px;color:var(--text)}
+.modal-sub{font-size:13px;color:var(--text-2);margin-bottom:16px;line-height:1.5}
+
+/* ── PRIORITY SELECTOR ───────────────────────── */
+.pri-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:12px}
+.pri-tab{height:42px;border-radius:var(--rad-sm);border:1.5px solid var(--border);background:none;font-size:12px;font-weight:600;font-family:var(--font);cursor:pointer;color:var(--text-2);transition:all .15s;text-align:center}
+.pri-tab.on.normal{background:var(--green-p);border-color:var(--green);color:var(--green)}
+.pri-tab.on.high{background:var(--amber-p);border-color:var(--amber);color:var(--amber)}
+.pri-tab.on.urgent{background:var(--red-p);border-color:var(--red);color:var(--red)}
+
+/* ── STATUS PIPELINE ─────────────────────────── */
+.pipeline{display:flex;gap:3px;overflow-x:auto;padding:2px 0;margin-bottom:12px}
+.pipe-step{flex-shrink:0;padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600;border:1.5px solid var(--border);background:none;color:var(--text-2);cursor:pointer;transition:all .15s}
+.pipe-step.current{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+.pipe-step.done{background:var(--n100);border-color:var(--n200);color:var(--n400)}
+
+/* ── LIVE FEED ───────────────────────────────── */
+.live-hdr{display:flex;align-items:center;gap:8px;padding:11px 14px;background:var(--navy);border-radius:var(--rad) var(--rad) 0 0;color:#fff}
+.live-title{font-size:14px;font-weight:700;flex:1}
+.live-badge{background:rgba(255,255,255,.15);border-radius:20px;font-size:11px;font-weight:700;padding:3px 9px}
+.live-feed{background:var(--n50);border-radius:0 0 var(--rad) var(--rad);border:1px solid var(--border);border-top:none;max-height:400px;overflow-y:auto}
+.feed-item{display:flex;gap:9px;padding:11px 13px;border-bottom:1px solid var(--n100);animation:slideIn .35s ease}
+@keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.feed-item:last-child{border-bottom:none}
+.feed-item.urgent{background:var(--red-p);border-left:3px solid var(--red)}
+.feed-emo{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.feed-body{flex:1;min-width:0}
+.feed-title{font-size:13px;font-weight:700;color:var(--text);line-height:1.3}
+.feed-meta{font-size:11px;color:var(--text-2);margin-top:2px}
+.feed-time{font-family:var(--mono);font-size:10px;color:var(--text-3);flex-shrink:0;padding-top:3px}
+
+/* ── ALERT BANNERS ───────────────────────────── */
+.alert-banner{
+  border-radius:var(--rad);padding:13px 14px;margin-bottom:10px;
+  display:flex;align-items:flex-start;gap:11px;animation:fadeUp .4s ease;
+  border:1px solid;
+}
+.alert-banner.crit{background:var(--red-p);border-color:#fca5a5;color:var(--red)}
+.alert-banner.warn{background:var(--amber-p);border-color:#fde68a;color:var(--amber)}
+.alert-banner.info{background:var(--blue-p);border-color:#bfdbfe;color:var(--blue)}
+.ab-ico{font-size:22px;flex-shrink:0}
+.ab-body{flex:1}
+.ab-title{font-size:13px;font-weight:700;margin-bottom:3px}
+.ab-sub{font-size:12px;opacity:.8;line-height:1.4}
+.ab-act{margin-top:8px;display:flex;gap:6px}
+
+/* ── EXPORT BUTTONS ──────────────────────────── */
+.exp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}
+.exp-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  padding:12px 6px;border-radius:var(--rad-sm);border:1.5px solid var(--border);
+  background:var(--surf);cursor:pointer;transition:all .15s;font-family:var(--font);
+}
+.exp-btn:hover{border-color:var(--gold);background:rgba(201,168,76,.05)}
+.exp-btn:active{transform:scale(.97)}
+.exp-ico{font-size:22px}
+.exp-lbl{font-size:12px;font-weight:700;color:var(--text)}
+.exp-sub{font-size:10px;color:var(--text-3)}
+
+/* ── SETTINGS / CONFIG ───────────────────────── */
+.settings-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--n100)}
+.settings-row:last-child{border-bottom:none}
+.settings-ico{width:38px;height:38px;border-radius:10px;background:var(--n100);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.settings-body{flex:1;min-width:0}
+.settings-name{font-size:13px;font-weight:600;color:var(--text)}
+.settings-sub{font-size:11px;color:var(--text-2);margin-top:2px;line-height:1.4;word-break:break-all}
+/* Toggle */
+.toggle-wrap{position:relative;width:46px;height:26px;flex-shrink:0;cursor:pointer}
+.toggle-inp{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:var(--n200);border-radius:13px;transition:.3s}
+.toggle-inp:checked ~ .toggle-track{background:var(--gold)}
+.toggle-thumb{position:absolute;left:3px;top:3px;width:20px;height:20px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:.3s}
+.toggle-inp:checked ~ .toggle-thumb{left:23px}
+
+/* ── CONTACT ROWS ────────────────────────────── */
+.contact-row{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--n100)}
+.contact-row:last-child{border-bottom:none}
+.contact-ico{width:36px;height:36px;border-radius:50%;background:var(--n100);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;margin-top:2px}
+.contact-body{flex:1;min-width:0}
+.contact-name{font-size:13px;font-weight:600}
+.contact-num{font-size:11px;color:var(--text-2);font-family:var(--mono);margin-top:2px;word-break:break-all}
+
+/* ── MISC ────────────────────────────────────── */
+.divider{height:1px;background:var(--border);margin:11px 0}
+.sub-tabs{display:flex;gap:5px;margin-bottom:13px;overflow-x:auto;padding-bottom:2px}
+.sub-tab{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--border);cursor:pointer;background:none;color:var(--text-2);white-space:nowrap;transition:all .15s}
+.sub-tab.on{background:var(--navy);color:var(--gold);border-color:var(--navy)}
+.info-box{padding:11px;border-radius:var(--rad-sm);font-size:11px;line-height:1.65;margin-top:9px;border:1px solid}
+.info-box.green{background:var(--green-p);color:#065f46;border-color:var(--green-l)}
+.info-box.amber{background:var(--amber-p);color:var(--amber);border-color:var(--amber-l)}
+.info-box.blue{background:var(--blue-p);color:var(--blue);border-color:var(--blue-l)}
+.empty{text-align:center;padding:32px 14px;color:var(--text-3)}
+.empty-ico{font-size:36px;margin-bottom:10px}
+.empty-title{font-size:14px;font-weight:600;color:var(--text-2);margin-bottom:5px}
+.empty-sub{font-size:12px;line-height:1.5}
+.pring{display:inline-block;width:9px;height:9px;border-radius:50%;background:#4ade80;position:relative}
+.pring::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2px solid #4ade80;animation:pringAnim 1.5s infinite}
+@keyframes pringAnim{0%{transform:scale(1);opacity:.7}100%{transform:scale(2);opacity:0}}
+.expre{background:var(--n50);border:1px solid var(--border);border-radius:var(--rad-sm);padding:11px;font-family:var(--mono);font-size:11px;color:var(--text);white-space:pre-wrap;max-height:280px;overflow-y:auto;line-height:1.7;margin-bottom:9px}
+.toast{
+  position:fixed;bottom:calc(var(--sab)+80px);left:50%;
+  transform:translateX(-50%) translateY(14px);
+  background:var(--n900);color:#fff;padding:10px 18px;border-radius:22px;
+  font-size:13px;font-weight:600;opacity:0;transition:all .22s;
+  pointer-events:none;z-index:9999;max-width:90vw;text-align:center;
+  box-shadow:var(--sh-lg);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+</style>
+</head>
+<body>
+
+<!-- ═══ AUTH SCREEN ════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-logo">🏨</div>
+  <div class="auth-hotel">Hyde House Hotel</div>
+  <div class="auth-addr">4111 South Ocean Drive · Hollywood, Florida</div>
+  <div id="setup-warning" style="display:none;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4);border-radius:10px;padding:10px 14px;margin-bottom:16px;max-width:340px;font-size:11px;line-height:1.65;color:#fca5a5">
+    <strong>⚠️ Firebase Auth no está activado.</strong><br>
+    Ve a <strong>console.firebase.google.com</strong> → tu proyecto → <strong>Authentication</strong> → <strong>Sign-in method</strong> → activa <strong>Email/Contraseña</strong> y <strong>Google</strong>.<br>
+    Luego añade <strong>arbellasusa.github.io</strong> en Authorized domains.
+  </div>
+
+  <div class="auth-card">
+    <div class="auth-tab" id="auth-tabs">
+      <button class="auth-tab-btn on" onclick="switchAuthTab('login')" id="tab-login">Iniciar sesión</button>
+      <button class="auth-tab-btn" onclick="switchAuthTab('register')" id="tab-register">Registrarse</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="login-form">
+      <div class="auth-field"><label class="auth-label">Tu nombre completo</label><input class="auth-input" id="login-name" type="text" placeholder="María García" autocomplete="name"></div>
+      <div class="auth-field"><label class="auth-label" style="display:block;margin-bottom:7px">Tu rol</label><select class="auth-select" id="login-role"><option value="housekeeper">🧹 Camarera / Housekeeper</option><option value="almacenero">📦 Responsable de Almacén</option><option value="supervisor">👔 Supervisor / Jefa de pisos</option><option value="gerente">🏨 Gerente</option><option value="admin">⚙️ Administrador</option></select></div>
+  <div class="auth-field"><label class="auth-label">Código del hotel</label><input class="auth-input" id="login-code" value="HYDE_HOTEL" autocomplete="off"></div>
+      <button class="auth-btn" id="lbtn" onclick="doLogin()">Entrar al sistema</button>
+
+    </div>
+
+    <!-- REGISTER -->
+    <div id="register-form" style="display:none">
+      <div class="auth-field"><label class="auth-label">Nombre completo</label><input class="auth-input" id="reg-name" type="text" placeholder="María García" autocomplete="name"></div>
+
+      <div class="auth-field">
+        <label class="auth-label">Rol</label>
+        <select class="auth-select" id="reg-role">
+          <option value="housekeeper">🧹 Camarera / Housekeeper</option>
+          <option value="almacenero">📦 Responsable de Almacén</option>
+          <option value="supervisor">👔 Supervisor / Jefa de pisos</option>
+          <option value="gerente">🏨 Gerente</option>
+          <option value="admin">⚙️ Administrador</option>
+        </select>
+      </div>
+      <button class="auth-btn" onclick="doRegister()">Crear cuenta</button>
+    </div>
+    <div class="auth-err" id="auth-err"></div>
+  </div>
+</div>
+
+<!-- ═══ APP ══════════════════════════════════ -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">🏨</div>
+    <div class="topbar-info">
+      <div class="topbar-hotel">Hyde House Hotel</div>
+      <div class="topbar-user" id="tb-user">Cargando...</div>
+    </div>
+    <div class="topbar-right">
+      <div class="conn-badge" id="conn-badge" onclick="goTo('settings')">
+        <div class="cdot" id="cdot"></div>
+        <span id="clbl">Local</span>
+      </div>
+      <div class="clk" id="clk">--:--</div>
+    </div>
+  </div>
+  <div class="role-strip housekeeper" id="role-strip">
+    <div class="role-dot"></div>
+    <span id="role-text">Cargando...</span>
+  </div>
+
+  <div class="content" id="content">
+
+    <!-- DASHBOARD -->
+    <div class="panel on" id="p-dash">
+      <div class="dash-grid">
+        <div class="kpi gold"><div class="kpi-n" id="kpi-req-today">—</div><div class="kpi-l">Solicitudes hoy</div></div>
+        <div class="kpi amber"><div class="kpi-n" id="kpi-pending">—</div><div class="kpi-l">Pendientes</div></div>
+        <div class="kpi red"><div class="kpi-n" id="kpi-urgent">—</div><div class="kpi-l">Urgentes</div></div>
+        <div class="kpi green"><div class="kpi-n" id="kpi-delivered">—</div><div class="kpi-l">Entregadas</div></div>
+        <div class="kpi blue"><div class="kpi-n" id="kpi-stock-low">—</div><div class="kpi-l">Stock bajo</div></div>
+        <div class="kpi purple"><div class="kpi-n" id="kpi-out">—</div><div class="kpi-l">Agotados</div></div>
+        <div class="kpi gold" style="grid-column:span 2"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="kpi-n" id="kpi-cost-day">$—</div><div class="kpi-l">Costo del día</div></div><div><div class="kpi-n" id="kpi-cost-month" style="font-size:20px">$—</div><div class="kpi-l" style="text-align:right">Costo mes</div></div></div></div>
+      </div>
+      <div class="chart-card">
+        <div class="card-hdr"><span class="card-title">Solicitudes últimos 7 días</span></div>
+        <canvas id="chart-requests" height="120"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="card-hdr"><span class="card-title">Inventario por categoría</span></div>
+        <canvas id="chart-inventory" height="120"></canvas>
+      </div>
+      <div id="dash-alerts"></div>
+    </div>
+
+    <!-- SOLICITUDES -->
+    <div class="panel" id="p-requests">
+      <div class="card">
+        <div class="card-hdr">
+          <span class="card-title">Nueva solicitud</span>
+          <span class="bdg live">● EN VIVO</span>
+        </div>
+        <div class="fg"><label class="fl">Habitación</label><select class="fs" id="req-room"><option value="">Seleccionar habitación...</option></select></div>
+        <div class="fg">
+          <label class="fl">Prioridad</label>
+          <div class="pri-tabs">
+            <button class="pri-tab on normal" id="pri-normal" onclick="setPri('normal')">✓ Normal</button>
+            <button class="pri-tab high" id="pri-high" onclick="setPri('high')">⚡ Alta</button>
+            <button class="pri-tab urgent" id="pri-urgent" onclick="setPri('urgent')">🚨 Urgente</button>
+          </div>
+        </div>
+        <div class="fg"><label class="fl">Categoría</label><div id="cat-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:11px"></div></div>
+        <div class="fg"><label class="fl">Producto / Material</label><div id="mat-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:11px"></div></div>
+        <div class="fr">
+          <div class="fg"><label class="fl">Cantidad</label><input class="fi" type="number" id="req-qty" value="1" min="1"></div>
+          <div class="fg"><label class="fl">Nota</label><input class="fi" id="req-note" placeholder="Observaciones..."></div>
+        </div>
+        <button class="btn-primary" id="req-send-btn" onclick="submitRequest()">
+          <svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9"/></svg>
+          Enviar solicitud
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-hdr">
+          <span class="card-title">Solicitudes activas</span>
+          <button class="card-action" onclick="filterReqs('all')">Ver todas</button>
+        </div>
+        <div class="pipeline" id="pipeline-filter">
+          <button class="pipe-step current" onclick="filterReqs('all')">Todas</button>
+          <button class="pipe-step" onclick="filterReqs('pending')">Pendiente</button>
+          <button class="pipe-step" onclick="filterReqs('approved')">Aprobada</button>
+          <button class="pipe-step" onclick="filterReqs('preparing')">Preparando</button>
+          <button class="pipe-step" onclick="filterReqs('delivered')">Entregada</button>
+        </div>
+        <div id="req-list"></div>
+      </div>
+    </div>
+
+    <!-- ALMACÉN -->
+    <div class="panel" id="p-almacen">
+      <div class="sub-tabs" id="alm-tabs">
+        <button class="sub-tab on" onclick="swAlm('feed')" id="alm-feed">📡 Feed</button>
+        <button class="sub-tab" onclick="swAlm('inventory')" id="alm-inventory">📦 Inventario</button>
+        <button class="sub-tab" onclick="swAlm('kardex')" id="alm-kardex">📊 Kardex</button>
+        <button class="sub-tab" onclick="swAlm('stock-in')" id="alm-stock-in">📥 Entradas</button>
+        <button class="sub-tab" onclick="swAlm('export')" id="alm-export">📋 Exportar</button>
+      </div>
+
+      <!-- Feed -->
+      <div id="alm-panel-feed">
+        <div class="dash-grid" style="margin-bottom:14px">
+          <div class="kpi amber"><div class="kpi-n" id="alm-pend">0</div><div class="kpi-l">Pendientes</div></div>
+          <div class="kpi blue"><div class="kpi-n" id="alm-prog">0</div><div class="kpi-l">En progreso</div></div>
+          <div class="kpi green"><div class="kpi-n" id="alm-done">0</div><div class="kpi-l">Entregadas</div></div>
+          <div class="kpi red"><div class="kpi-n" id="alm-stk">0</div><div class="kpi-l">Stock bajo</div></div>
+        </div>
+        <div style="margin-bottom:10px">
+          <div class="live-hdr"><div class="pring"></div><div class="live-title">Solicitudes en tiempo real</div><div class="live-badge" id="live-cnt">0 pendientes</div></div>
+          <div class="live-feed" id="live-feed"><div class="empty"><div class="empty-ico">📡</div><p>Esperando solicitudes...</p></div></div>
+        </div>
+      </div>
+
+      <!-- Inventory -->
+      <div id="alm-panel-inventory" style="display:none">
+        <div style="display:flex;gap:7px;margin-bottom:10px">
+          <input class="fi" id="inv-search" placeholder="Buscar producto..." oninput="renderInventory()" style="flex:1">
+          <button class="btn gold" onclick="openModal('add-prod-modal')">+ Añadir</button>
+        </div>
+        <div id="inv-list"></div>
+      </div>
+
+      <!-- Kardex -->
+      <div id="alm-panel-kardex" style="display:none">
+        <div class="fr" style="margin-bottom:10px">
+          <div class="fg"><label class="fl">Filtrar por producto</label><select class="fs" id="kardex-prod"><option value="">Todos</option></select></div>
+          <div class="fg"><label class="fl">Tipo movimiento</label>
+            <select class="fs" id="kardex-type">
+              <option value="">Todos</option>
+              <option value="entry">Entradas</option>
+              <option value="exit">Salidas</option>
+              <option value="adjust">Ajustes</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="kardex-table">
+            <thead><tr>
+              <th>Fecha</th><th>Hora</th><th>Producto</th><th>Tipo</th><th>Cant.</th><th>Anterior</th><th>Final</th><th>Usuario</th><th>Referencia</th>
+            </tr></thead>
+            <tbody id="kardex-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Stock In -->
+      <div id="alm-panel-stock-in" style="display:none">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">Registrar entrada de stock</div>
+          <div class="fg"><label class="fl">Producto</label><select class="fs" id="si-prod"><option value="">Seleccionar...</option></select></div>
+          <div class="fr3">
+            <div class="fg"><label class="fl">Cantidad</label><input class="fi" type="number" id="si-qty" placeholder="0" min="1"></div>
+            <div class="fg"><label class="fl">Precio unit.</label><input class="fi" type="number" id="si-price" placeholder="0.00" step="0.01"></div>
+            <div class="fg"><label class="fl">Tipo</label>
+              <select class="fs" id="si-type">
+                <option value="entry">Compra</option>
+                <option value="transfer">Traslado</option>
+                <option value="adjust">Ajuste</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg"><label class="fl">Proveedor / Factura</label><input class="fi" id="si-ref" placeholder="Nombre, nº factura..."></div>
+          <div class="fg"><label class="fl">Observaciones</label><input class="fi" id="si-note" placeholder="Opcional..."></div>
+          <button class="btn-primary" onclick="addStockEntry()">Registrar entrada</button>
+        </div>
+      </div>
+
+      <!-- Export -->
+      <div id="alm-panel-export" style="display:none">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">Generar reporte de inventario</div>
+          <div class="exp-grid">
+            <button class="exp-btn" onclick="generateReport('daily')"><div class="exp-ico">📊</div><div class="exp-lbl">Diario</div><div class="exp-sub">Hoy</div></button>
+            <button class="exp-btn" onclick="generateReport('weekly')"><div class="exp-ico">📈</div><div class="exp-lbl">Semanal</div><div class="exp-sub">7 días</div></button>
+            <button class="exp-btn" onclick="generateReport('biweekly')"><div class="exp-ico">📉</div><div class="exp-lbl">Quincenal</div><div class="exp-sub">15 días</div></button>
+            <button class="exp-btn" onclick="generateReport('monthly')"><div class="exp-ico">📋</div><div class="exp-lbl">Mensual</div><div class="exp-sub">30 días</div></button>
+            <button class="exp-btn" onclick="exportPDF()"><div class="exp-ico">📄</div><div class="exp-lbl">PDF</div><div class="exp-sub">Descargar</div></button>
+            <button class="exp-btn" onclick="exportCSV()"><div class="exp-ico">📑</div><div class="exp-lbl">CSV/Excel</div><div class="exp-sub">Descargar</div></button>
+          </div>
+          <div style="display:flex;gap:7px;margin-top:4px">
+            <button class="btn wa full" onclick="sendReportWA('almacenero')">📲 Enviar WA almacenero</button>
+          </div>
+          <div id="report-preview" style="display:none;margin-top:12px">
+            <div class="expre" id="report-text" style="font-size:11px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERTAS -->
+    <div class="panel" id="p-alerts">
+      <div id="alerts-list"></div>
+      <div class="card" style="margin-top:0">
+        <button class="btn-primary wa" onclick="sendAllAlertsWA()" style="margin-bottom:9px">
+          <svg style="width:17px;height:17px;fill:#fff;stroke:none" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.121 1.531 5.847L.057 23.49a.5.5 0 00.609.61l5.721-1.499A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.93 0-3.74-.521-5.29-1.428l-.379-.222-3.934 1.031 1.011-3.846-.244-.393A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+          Enviar todas las alertas → Almacenero WA
+        </button>
+        <div style="display:flex;gap:7px">
+          <button class="btn p full" onclick="sendAllAlertsWA('supervisor')">→ Supervisor</button>
+          <button class="btn n full" onclick="copyAlerts()">📋 Copiar</button>
+        </div>
+        <div id="alert-preview" style="display:none;margin-top:10px">
+          <div class="expre" id="alert-text" style="font-size:12px;font-family:var(--font)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="panel" id="p-chat">
+      <div class="ch-tabs" id="chat-channel-tabs">
+        <button class="ch-tab on" onclick="switchChannel('housekeeping')" id="ch-housekeeping">🧹 Housekeeping</button>
+        <button class="ch-tab" onclick="switchChannel('almacen')" id="ch-almacen">📦 Almacén</button>
+        <button class="ch-tab" onclick="switchChannel('supervisores')" id="ch-supervisores">👔 Supervisores</button>
+        <button class="ch-tab" onclick="switchChannel('mantenimiento')" id="ch-mantenimiento">🔧 Mantenimiento</button>
+      </div>
+      <div class="chat-wrap">
+        <div class="chat-hdr">
+          <div class="chat-av">HK</div>
+          <div>
+            <div class="chat-title" id="chat-title">🧹 Housekeeping</div>
+            <div class="chat-sub" id="chat-sub">Canal activo</div>
+          </div>
+        </div>
+        <div class="chat-msgs" id="chat-msgs"></div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="chat-input" placeholder="Escribe un mensaje...">
+          <button class="chat-send" onclick="sendChatMsg()">
+            <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:#fff;stroke:none"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:10px">Mensajes rápidos</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn g full" onclick="quickMsg('✅ Vamos en camino. ¡Muchas gracias por su servicio! 🙏')">✅ Vamos en camino</button>
+          <button class="btn b full" onclick="quickMsg('🛏 Linen recogido. ¡Excelente trabajo! ⭐')">🛏 Linen recogido</button>
+          <button class="btn y full" onclick="quickMsg('🧴 Refill completado. Todo listo. ¡Gracias! ✨')">🧴 Refill completado</button>
+          <button class="btn r full" onclick="quickMsg('⚠️ Atención equipo: revisar stock en almacén.')">⚠️ Aviso stock bajo</button>
+        </div>
+        <div class="divider"></div>
+        <div class="card-title" style="margin-bottom:10px">WhatsApp directo</div>
+        <div id="direct-wa"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel" id="p-settings">
+      <div class="sub-tabs">
+        <button class="sub-tab on" onclick="swSettings('wa')" id="st-wa">📱 WhatsApp</button>
+        <button class="sub-tab" onclick="swSettings('hotel')" id="st-hotel">🏨 Hotel</button>
+        <button class="sub-tab" onclick="swSettings('alerts')" id="st-alerts">🔔 Alertas</button>
+        <button class="sub-tab" onclick="swSettings('account')" id="st-account">👤 Cuenta</button>
+      </div>
+
+      <div id="set-wa">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Contactos WhatsApp</span><button class="card-action" onclick="openModal('wa-modal')">✏️ Editar</button></div>
+          <div id="wa-contacts-list"></div>
+          <div class="info-box amber">Formato: <code>+1809XXXXXXX</code> (código país + número, sin espacios)</div>
+        </div>
+      </div>
+
+      <div id="set-hotel" style="display:none">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">Configuración del hotel</div>
+          <div class="fg"><label class="fl">Nombre del hotel</label><input class="fi" id="h-name" placeholder="Hyde House Hotel"></div>
+          <div class="fr">
+            <div class="fg"><label class="fl">Pisos</label><input class="fi" type="number" id="h-floors" value="41" min="1" max="100"></div>
+            <div class="fg"><label class="fl">Hab. por piso</label><input class="fi" type="number" id="h-rpp" value="10" min="1" max="50"></div>
+          </div>
+          <div class="fg"><label class="fl">Número inicial de hab.</label><input class="fi" type="number" id="h-start-room" value="100" min="1"></div>
+          <div class="fg"><label class="fl">Suites (números especiales, separados por coma)</label><input class="fi" id="h-suites" placeholder="Ej: PH01, STE02, VILLA03"></div>
+          <div class="fg"><label class="fl">Áreas comunes (separadas por coma)</label><input class="fi" id="h-areas" placeholder="Ej: Lobby, Pool, Spa, Gym, Restaurant"></div>
+          <div class="fr">
+            <div class="fg"><label class="fl">Turno mañana</label><input class="fi" type="time" id="h-shift1" value="07:00"></div>
+            <div class="fg"><label class="fl">Turno tarde</label><input class="fi" type="time" id="h-shift2" value="15:00"></div>
+          </div>
+          <button class="btn g full" onclick="saveHotelConfig()">💾 Guardar configuración</button>
+        </div>
+      </div>
+
+      <div id="set-alerts" style="display:none">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">Alertas automáticas</div>
+          <div class="settings-row">
+            <div class="settings-ico">🔔</div>
+            <div class="settings-body">
+              <div class="settings-name">Alerta diaria de stock</div>
+              <div class="settings-sub">Envía resumen de stock bajo a las 08:00 AM</div>
+            </div>
+            <label class="toggle-wrap">
+              <input type="checkbox" class="toggle-inp" id="tog-daily" checked>
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-ico">📊</div>
+            <div class="settings-body">
+              <div class="settings-name">Reporte semanal</div>
+              <div class="settings-sub">Domingos a las 8:00 AM — genera PDF automático</div>
+            </div>
+            <label class="toggle-wrap">
+              <input type="checkbox" class="toggle-inp" id="tog-weekly" checked>
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-ico">📈</div>
+            <div class="settings-body">
+              <div class="settings-name">Reporte quincenal</div>
+              <div class="settings-sub">Día 15 de cada mes</div>
+            </div>
+            <label class="toggle-wrap">
+              <input type="checkbox" class="toggle-inp" id="tog-biweekly" checked>
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-ico">📋</div>
+            <div class="settings-body">
+              <div class="settings-name">Reporte mensual</div>
+              <div class="settings-sub">Último día del mes</div>
+            </div>
+            <label class="toggle-wrap">
+              <input type="checkbox" class="toggle-inp" id="tog-monthly" checked>
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+          <div class="fg" style="margin-top:10px"><label class="fl">Hora de alerta diaria</label><input class="fi" type="time" id="alert-daily-time" value="08:00"></div>
+          <button class="btn y full" onclick="runAlertNow()">🔔 Ejecutar alerta ahora (prueba)</button>
+          <button class="btn n full" style="margin-top:7px" onclick="saveAlertConfig()">💾 Guardar configuración</button>
+        </div>
+      </div>
+
+      <div id="set-account" style="display:none">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">Mi cuenta</div>
+          <div id="account-info"></div>
+          <div class="divider"></div>
+          <div class="fg"><label class="fl">Cambiar nombre</label><input class="fi" id="acc-name" placeholder="Nombre completo"></div>
+          <div style="display:flex;gap:7px">
+            <button class="btn g full" onclick="updateProfile()">💾 Actualizar</button>
+            <button class="btn r full" onclick="doLogout()">🚪 Cerrar sesión</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <nav class="bnav">
+    <button class="nb on" onclick="goTo('dash')" id="nb-dash">
+      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="nb" onclick="goTo('requests')" id="nb-requests">
+      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      <span>Solicitudes</span>
+      <div class="nb-dot" id="dot-requests"></div>
+    </button>
+    <button class="nb" onclick="goTo('almacen')" id="nb-almacen">
+      <svg viewBox="0 0 24 24"><path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+      <span>Almacén</span>
+      <div class="nb-dot" id="dot-almacen"></div>
+    </button>
+    <button class="nb" onclick="goTo('alerts')" id="nb-alerts">
+      <svg viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+      <span>Alertas</span>
+      <div class="nb-dot" id="dot-alerts"></div>
+    </button>
+    <button class="nb" onclick="goTo('chat')" id="nb-chat">
+      <svg viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      <span>Chat</span>
+    </button>
+    <button class="nb" onclick="goTo('settings')" id="nb-settings">
+      <svg viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <span>Config</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ═══ MODALS ════════════════════════════════ -->
+
+<!-- WA Numbers Modal -->
+<div class="overlay gone" id="wa-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📱 Números WhatsApp</div>
+    <div class="modal-sub">Incluye el código de país. Ej: 🇩🇴 <strong>+1809</strong>XXXXXXX · 🇺🇸 <strong>+1</strong>XXXXXXXXXX</div>
+    <div class="fg"><label class="fl">📦 Almacenero</label><input class="fi" id="wa-alm" type="tel" placeholder="+18095551234"></div>
+    <div class="fg"><label class="fl">👔 Supervisor</label><input class="fi" id="wa-sup" type="tel" placeholder="+18095551234"></div>
+    <div class="fg"><label class="fl">🔧 Mantenimiento</label><input class="fi" id="wa-mnt" type="tel" placeholder="+18095551234"></div>
+    <div class="fg"><label class="fl">🛎 Recepción</label><input class="fi" id="wa-rec" type="tel" placeholder="+18095551234"></div>
+    <div class="fg">
+      <label class="fl">💬 Grupo WhatsApp (número o link)</label>
+      <textarea class="fi-textarea" id="wa-grp" rows="2" placeholder="+18095551234  ó  https://chat.whatsapp.com/..."></textarea>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn n full" onclick="closeModal('wa-modal')">Cancelar</button>
+      <button class="btn wa full" style="height:46px;font-size:13px;font-weight:700" onclick="saveWAContacts()">💾 Guardar números</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="overlay gone" id="add-prod-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📦 Nuevo producto</div>
+    <div class="modal-sub">El inventario inicia en 0. Establece la existencia inicial y el mínimo de alerta.</div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Código / SKU</label><input class="fi" id="pm-sku" placeholder="PROD-001"></div>
+      <div class="fg"><label class="fl">Categoría</label>
+        <select class="fs" id="pm-cat">
+          <option value="linen">🛏 Linen / Ropa</option>
+          <option value="refill">🧴 Refill / Amenities</option>
+          <option value="supply">🧻 Supplies</option>
+          <option value="clean">🧼 Limpieza</option>
+          <option value="other">📦 Otros</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Nombre del producto (ES)</label><input class="fi" id="pm-name" placeholder="Papel higiénico"></div>
+    <div class="fg"><label class="fl">Nombre en inglés</label><input class="fi" id="pm-name-en" placeholder="Toilet paper"></div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Unidad</label><input class="fi" id="pm-unit" placeholder="rollos, ud, litros..."></div>
+      <div class="fg"><label class="fl">Proveedor</label><input class="fi" id="pm-supplier" placeholder="Nombre proveedor"></div>
+    </div>
+    <div class="fr3">
+      <div class="fg"><label class="fl">Exist. inicial</label><input class="fi" id="pm-init" type="number" min="0" value="0"></div>
+      <div class="fg"><label class="fl">Mínimo</label><input class="fi" id="pm-min" type="number" min="0" value="5"></div>
+      <div class="fg"><label class="fl">Máximo</label><input class="fi" id="pm-max" type="number" min="0" value="100"></div>
+    </div>
+    <div class="fg"><label class="fl">Precio unitario (USD)</label><input class="fi" id="pm-price" type="number" min="0" step="0.01" value="0"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn n full" onclick="closeModal('add-prod-modal')">Cancelar</button>
+      <button class="btn g full" onclick="saveProduct()">✓ Añadir producto</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Product Modal -->
+<div class="overlay gone" id="edit-prod-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ Editar producto</div>
+    <input type="hidden" id="ep-id">
+    <div class="fr">
+      <div class="fg"><label class="fl">SKU</label><input class="fi" id="ep-sku"></div>
+      <div class="fg"><label class="fl">Categoría</label>
+        <select class="fs" id="ep-cat">
+          <option value="linen">🛏 Linen</option>
+          <option value="refill">🧴 Refill</option>
+          <option value="supply">🧻 Supplies</option>
+          <option value="clean">🧼 Limpieza</option>
+          <option value="other">📦 Otros</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Nombre</label><input class="fi" id="ep-name"></div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Unidad</label><input class="fi" id="ep-unit"></div>
+      <div class="fg"><label class="fl">Proveedor</label><input class="fi" id="ep-supplier"></div>
+    </div>
+    <div class="fr3">
+      <div class="fg"><label class="fl">Exist. inicial</label><input class="fi" id="ep-init" type="number" min="0"></div>
+      <div class="fg"><label class="fl">Mínimo</label><input class="fi" id="ep-min" type="number" min="0"></div>
+      <div class="fg"><label class="fl">Máximo</label><input class="fi" id="ep-max" type="number" min="0"></div>
+    </div>
+    <div class="fg"><label class="fl">Precio unit. (USD)</label><input class="fi" id="ep-price" type="number" min="0" step="0.01"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn r" onclick="deleteProduct()" style="height:42px;padding:0 14px">🗑 Eliminar</button>
+      <button class="btn n full" onclick="closeModal('edit-prod-modal')">Cancelar</button>
+      <button class="btn g full" onclick="updateProduct()">✓ Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Adjust Modal -->
+<div class="overlay gone" id="adjust-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="adj-title">Ajuste de stock</div>
+    <input type="hidden" id="adj-id">
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--n100);border-radius:var(--rad-sm);margin-bottom:14px">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600" id="adj-prod-name">—</div>
+        <div style="font-size:11px;color:var(--text-2);margin-top:3px">Existencia actual: <strong id="adj-current">—</strong></div>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Nueva existencia final</label><input class="fi" type="number" id="adj-qty" min="0"></div>
+    <div class="fg"><label class="fl">Motivo del ajuste</label>
+      <select class="fs" id="adj-reason">
+        <option value="correction">Corrección de inventario</option>
+        <option value="damage">Daño / Merma</option>
+        <option value="loss">Pérdida</option>
+        <option value="recount">Reconteo físico</option>
+        <option value="other">Otro</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">Observaciones</label><input class="fi" id="adj-note" placeholder="Opcional..."></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn n full" onclick="closeModal('adjust-modal')">Cancelar</button>
+      <button class="btn gold full" onclick="saveAdjustment()">✓ Aplicar ajuste</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ═══ APP LOGIC ════════════════════════════ -->
+<script>
+'use strict';
+
+// ════════════════════════════════════════════
+// FIREBASE SETUP
+// ════════════════════════════════════════════
+const FB_CONFIG = {
+  apiKey:            "AIzaSyAm-XD0cJJR6JjHwd093ijnoh3qcq4UkDg",
+  authDomain:        "hk-pro-housekeeping.firebaseapp.com",
+  databaseURL:       "https://hk-pro-housekeeping-default-rtdb.firebaseio.com",
+  projectId:         "hk-pro-housekeeping",
+  storageBucket:     "hk-pro-housekeeping.firebasestorage.app",
+  messagingSenderId: "890258208844",
+  appId:             "1:890258208844:web:fa13c82c89062c5054dce9"
+};
+
+firebase.initializeApp(FB_CONFIG);
+const db   = firebase.firestore();
+const rtdb = firebase.database();
+// const auth = firebase.auth(); // not needed
+
+// Firestore collection names
+const C = {
+  users:     'users',
+  requests:  'requests',
+  inventory: 'inventory',
+  movements: 'movements',
+  alerts:    'alerts',
+  chat:      'chat',
+  settings:  'settings'
+};
+
+// ════════════════════════════════════════════
+// CONSTANTS
+// ════════════════════════════════════════════
+const HOTEL = { name:'Hyde House Hotel', address:'4111 South Ocean Drive', city:'Hollywood, Florida' };
+
+const ROLES = {
+  housekeeper:{ label:'🧹 Camarera',   level:1 },
+  almacenero: { label:'📦 Almacenero', level:2 },
+  supervisor: { label:'👔 Supervisor', level:3 },
+  gerente:    { label:'🏨 Gerente',    level:4 },
+  admin:      { label:'⚙️ Admin',      level:5 }
+};
+
+const REQ_STATUS = {
+  pending:   { label:'Pendiente',  cls:'pending' },
+  approved:  { label:'Aprobada',   cls:'approved' },
+  preparing: { label:'Preparando', cls:'preparing' },
+  delivered: { label:'Entregada',  cls:'delivered' },
+  closed:    { label:'Cerrada',    cls:'closed' }
+};
+
+const CATS = {
+  linen: { l:'🛏 Linen',    bg:'#dbeafe', items:['Ropa sucia/Dirty linen','Sábanas/Sheets','Funda colchón/Mattress','Funda almohada/Pillow','Colcha/Bedspread','Manta/Blanket'] },
+  refill:{ l:'🧴 Refill',   bg:'#d1fae5', items:['Gel ducha/Shower gel','Champú/Shampoo','Acondicionador/Conditioner','Jabón manos/Hand soap','Jabón pastilla/Bar soap','Body lotion','Sanitizer'] },
+  supply:{ l:'🧻 Supplies', bg:'#fef3c7', items:['Papel higiénico/Toilet paper','Papel cocina/Kitchen paper','Toalla pequeña/Small towel','Toalla mediana/Medium towel','Toalla grande/Large towel','Toalla pies/Foot towel','Bolsas/Trash bags','Amenities set'] },
+  clean: { l:'🧼 Limpieza', bg:'#ede9fe', items:['Detergente/Detergent','Desinfectante baño','Limpiador suelos','Lejía/Bleach','Desengrasante','Limpiacristales','Ambientador','Bayetas/Cloths','Mopa/Mop'] },
+  help:  { l:'🆘 Ayuda',    bg:'#fee2e2', items:['Mantenimiento urgente','Ayuda extra habitación','Habitación bloqueada','Cliente en habitación','Daño en habitación','Cuna/cama extra'] }
+};
+
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+let CU = null;       // current user object
+let CFG  = {};       // hotel config
+let WA   = {};       // WhatsApp numbers
+let selCat = 'linen', selMat = null, selPri = 'normal';
+let activeChannel = 'housekeeping';
+let activeFilter = 'all';
+let fbListeners = [];  // cleanup refs
+let invExpanded = {};
+let charts = {};
+let alertTimer = null;
+let lastReportText = '';
+
+// ════════════════════════════════════════════
+// LOCALSTORAGE FALLBACK
+// ════════════════════════════════════════════
+const LS = {
+  g: k => { try{ return JSON.parse(localStorage.getItem('hkp10_'+k)); }catch{ return null; } },
+  s: (k,v) => { try{ localStorage.setItem('hkp10_'+k, JSON.stringify(v)); }catch{} }
+};
+
+// ════════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════════
+function switchAuthTab(tab){
+  document.getElementById('login-form').style.display   = tab==='login'    ? '' : 'none';
+  document.getElementById('register-form').style.display= tab==='register' ? '' : 'none';
+  document.getElementById('tab-login').classList.toggle('on',    tab==='login');
+  document.getElementById('tab-register').classList.toggle('on', tab==='register');
+  document.getElementById('auth-err').textContent='';
+}
+
+function doLogin(){
+  const name=(document.getElementById('login-name')?.value||'').trim();
+  const role=document.getElementById('login-role')?.value||'housekeeper';
+  const code=(document.getElementById('login-code')?.value||'HYDE_HOTEL').trim();
+  const err=document.getElementById('auth-err');
+  if(!name){err.textContent='⚠️ Escribe tu nombre';document.getElementById('login-name')?.focus();return;}
+  CU={name,role,hotelCode:code,uid:'u_'+name.replace(/\s+/g,'_').toLowerCase()};
+  LS.s('user',CU);
+  document.getElementById('auth-screen').classList.add('gone');
+  document.getElementById('app').classList.add('visible');
+  loadSettings().then(()=>initApp());
+}
+
+function doRegister(){
+  const name=(document.getElementById('reg-name')?.value||'').trim();
+  const role=document.getElementById('reg-role')?.value||'housekeeper';
+  const err=document.getElementById('auth-err');
+  if(!name){err.textContent='⚠️ Escribe tu nombre';document.getElementById('reg-name')?.focus();return;}
+  CU={name,role,hotelCode:'HYDE_HOTEL',uid:'u_'+name.replace(/\s+/g,'_').toLowerCase()};
+  LS.s('user',CU);
+  document.getElementById('auth-screen').classList.add('gone');
+  document.getElementById('app').classList.add('visible');
+  loadSettings().then(()=>initApp());
+}
+
+function doLogout(){
+  if(!confirm('¿Cerrar sesión?')) return;
+  fbListeners.forEach(fn => { try{ fn(); }catch(e){} });
+  fbListeners = [];
+  LS.s('user',null);
+  location.reload();
+}
+
+function authErrMsg(code){
+  const map = {
+    'auth/user-not-found':          '⚠️ Usuario no encontrado. ¿Te has registrado primero?',
+    'auth/wrong-password':          '⚠️ Contraseña incorrecta',
+    'auth/invalid-credential':      '⚠️ Correo o contraseña incorrectos',
+    'auth/email-already-in-use':    '⚠️ Este email ya está registrado. Usa "Iniciar sesión"',
+    'auth/weak-password':           '⚠️ Contraseña muy corta (mínimo 6 caracteres)',
+    'auth/invalid-email':           '⚠️ Formato de email inválido',
+    'auth/network-request-failed':  '⚠️ Sin conexión a internet',
+    'auth/too-many-requests':       '⚠️ Demasiados intentos. Espera unos minutos',
+    'auth/popup-closed-by-user':    '',
+    'auth/popup-blocked':           '⚠️ Popup bloqueado. Permite popups para este sitio',
+    'auth/unauthorized-domain':     '⚠️ Dominio no autorizado — ve a Firebase Console → Authentication → Settings → Authorized domains → añadir arbellasusa.github.io',
+    'auth/operation-not-allowed':   '⚠️ Login con email no activado — ve a Firebase Console → Authentication → Sign-in method → Email/Password → Habilitar',
+    'auth/configuration-not-found': '⚠️ Firebase Auth no configurado — activa Authentication en Firebase Console',
+  };
+  return map[code] || ('⚠️ Error Firebase: ' + code);
+}
+
+// ════════════════════════════════════════════
+// AUTH STATE LISTENER
+// ════════════════════════════════════════════
+// Auto-restore session from localStorage
+(function(){
+  const s=LS.g('user');
+  if(s&&s.name){
+    CU=s;
+    document.getElementById('auth-screen').classList.add('gone');
+    document.getElementById('app').classList.add('visible');
+    loadSettings().then(()=>initApp()).catch(()=>initApp());
+  }
+})();
+
+// ════════════════════════════════════════════
+// INIT APP
+// ════════════════════════════════════════════
+async function initApp(){
+  applyRole();
+  buildRoomSelect();
+  renderCatGrid();
+  renderMatGrid();
+  setConnStatus(true);
+  try { startRealtimeListeners(); } catch(e){ console.warn('Listeners:', e.message); }
+  scheduleAlerts();
+  setInterval(tick, 1000);
+  tick();
+  renderWAContacts();
+  loadHotelForm();
+  // Role-based default tab
+  if(CU.role === 'almacenero') goTo('almacen');
+  else if(CU.role === 'gerente' || CU.role === 'admin') goTo('dash');
+  else goTo('requests');
+  toast(`👋 Bienvenido/a, ${CU.name.split(' ')[0]}!`);
+}
+
+async function loadSettings(){
+  CFG = LS.g('cfg') || { hotelName:'Hyde House Hotel', floors:41, rpp:10, startRoom:100, shifts:['07:00','15:00'], alerts:{ daily:true, weekly:true, biweekly:true, monthly:true, dailyTime:'08:00' } };
+  WA  = LS.g('wa')  || { almacenero:'', supervisor:'', mantenimiento:'', recepcion:'', grupoLink:'' };
+  // Try Firestore — graceful fallback if not yet configured
+  try {
+    const snap = await Promise.race([
+      db.collection(C.settings).doc('hotel').get(),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000))
+    ]);
+    if(snap.exists) CFG = { ...CFG, ...snap.data() };
+    const waSnap = await db.collection(C.settings).doc('whatsapp').get();
+    if(waSnap.exists) WA = { ...WA, ...waSnap.data() };
+    setConnStatus(true);
+  } catch(e){
+    console.warn('Settings load (will use local):', e.message);
+    setConnStatus(false);
+  }
+}
+
+// ════════════════════════════════════════════
+// REALTIME LISTENERS
+// ════════════════════════════════════════════
+function startRealtimeListeners(){
+  // Requests — live feed
+  const reqUnsubscribe = db.collection(C.requests)
+    .orderBy('createdAt','desc')
+    .limit(100)
+    .onSnapshot(snap => {
+      renderRequestFeed(snap.docs.map(d => ({id:d.id,...d.data()})));
+      updateDashKPIs(snap.docs.map(d => ({id:d.id,...d.data()})));
+    }, () => {});
+  fbListeners.push(reqUnsubscribe);
+
+  // Inventory
+  const invUnsubscribe = db.collection(C.inventory)
+    .orderBy('category')
+    .onSnapshot(snap => {
+      const prods = snap.docs.map(d => ({id:d.id,...d.data()}));
+      renderInventory(prods);
+      renderAlerts(prods);
+      updateAlertBadges(prods);
+      updateInventoryChart(prods);
+      fillProductSelects(prods);
+    }, () => {});
+  fbListeners.push(invUnsubscribe);
+
+  // Movements (Kardex)
+  const movUnsubscribe = db.collection(C.movements)
+    .orderBy('createdAt','desc')
+    .limit(200)
+    .onSnapshot(snap => {
+      renderKardex(snap.docs.map(d => ({id:d.id,...d.data()})));
+    }, () => {});
+  fbListeners.push(movUnsubscribe);
+
+  // Chat
+  listenChat('housekeeping');
+}
+
+// ════════════════════════════════════════════
+// ROLE & NAVIGATION
+// ════════════════════════════════════════════
+function applyRole(){
+  const role = CU.role || 'housekeeper';
+  const rl = ROLES[role] || ROLES.housekeeper;
+  const strip = document.getElementById('role-strip');
+  strip.className = 'role-strip ' + role;
+  document.getElementById('role-text').textContent = CU.name + ' — ' + rl.label;
+  document.getElementById('tb-user').textContent = CU.email || '';
+  document.getElementById('acc-name').value = CU.name;
+}
+
+function goTo(page){
+  ['dash','requests','almacen','alerts','chat','settings'].forEach(p => {
+    document.getElementById('p-'+p)?.classList.toggle('on', p===page);
+    document.getElementById('nb-'+p)?.classList.toggle('on', p===page);
+  });
+  if(page==='almacen') swAlm('feed');
+  if(page==='settings') { swSettings('wa'); renderWAContacts(); loadAccountInfo(); }
+  if(page==='dash') updateDashCharts();
+  if(page==='chat') renderChatMsgs();
+  if(page==='alerts') renderAlerts();
+  if(page==='requests') renderMyRequests();
+}
+
+function setConnStatus(ok){
+  const d=document.getElementById('cdot'), l=document.getElementById('clbl');
+  if(!d)return;
+  d.className = 'cdot'+(ok?' on':'');
+  l.textContent = ok ? '🔥 Firebase' : 'Sin conexión';
+}
+
+// ════════════════════════════════════════════
+// ROOM SELECT (41 pisos Hyde House)
+// ════════════════════════════════════════════
+function buildRoomSelect(){
+  const s=document.getElementById('req-room');
+  if(!s)return;
+  s.innerHTML='<option value="">Seleccionar habitación...</option>';
+  const floors = CFG.floors || 41;
+  const rpp    = CFG.rpp    || 10;
+  for(let f=1; f<=floors; f++){
+    const og = document.createElement('optgroup');
+    og.label = `Piso ${f}`;
+    for(let r=1; r<=rpp; r++){
+      const n = f*100 + r;
+      const o = document.createElement('option');
+      o.value = String(n);
+      o.textContent = `Hab. ${n}`;
+      og.appendChild(o);
+    }
+    s.appendChild(og);
+  }
+  // Add suites
+  const suites = CFG.suites||[];
+  if(suites.length){
+    const og=document.createElement('optgroup'); og.label='Suites';
+    suites.forEach(suite=>{
+      const o=document.createElement('option'); o.value=suite; o.textContent=suite; og.appendChild(o);
+    });
+    s.appendChild(og);
+  }
+  // Add common areas
+  const areas = CFG.areas||[];
+  if(areas.length){
+    const og=document.createElement('optgroup'); og.label='Áreas comunes';
+    areas.forEach(area=>{
+      const o=document.createElement('option'); o.value=area; o.textContent=area; og.appendChild(o);
+    });
+    s.appendChild(og);
+  }
+}
+
+// ════════════════════════════════════════════
+// CATEGORY / MATERIAL GRIDS
+// ════════════════════════════════════════════
+function renderCatGrid(){
+  const el=document.getElementById('cat-grid');
+  el.innerHTML=Object.entries(CATS).map(([k,v])=>
+    `<button onclick="pickCat('${k}')" style="padding:9px 5px;border-radius:8px;font-size:10px;font-weight:600;border:1.5px solid var(--border);cursor:pointer;background:${selCat===k?'var(--n900)':'var(--n50)'};color:${selCat===k?'var(--gold)':'var(--text-2)'};text-align:center;line-height:1.3;transition:all .15s">${v.l}</button>`
+  ).join('');
+}
+function pickCat(k){ selCat=k; selMat=null; renderCatGrid(); renderMatGrid(); }
+function renderMatGrid(){
+  const el=document.getElementById('mat-grid');
+  el.innerHTML=CATS[selCat].items.map((it,i)=>
+    `<button onclick="pickMat(${i})" style="padding:9px 7px;border-radius:8px;font-size:11px;font-weight:500;border:1.5px solid ${selMat===i?'var(--gold)':'var(--border)'};cursor:pointer;background:${selMat===i?'rgba(201,168,76,.1)':'var(--surf)'};color:${selMat===i?'var(--gold-d)':'var(--text)'};text-align:center;line-height:1.3;transition:all .15s">${it}</button>`
+  ).join('');
+}
+function pickMat(i){ selMat=i; renderMatGrid(); }
+function setPri(p){
+  selPri=p;
+  ['normal','high','urgent'].forEach(pp => {
+    const el=document.getElementById('pri-'+pp);
+    if(el) el.className='pri-tab'+(p===pp?' on ':' ')+pp;
+  });
+  document.getElementById('req-send-btn').className='btn-primary'+(p==='urgent'?' danger':'');
+}
+
+// ════════════════════════════════════════════
+// SUBMIT REQUEST
+// ════════════════════════════════════════════
+async function submitRequest(){
+  const room = document.getElementById('req-room').value;
+  const qty  = parseInt(document.getElementById('req-qty').value)||1;
+  const note = document.getElementById('req-note').value.trim();
+  if(!room){ toast('⚠️ Selecciona una habitación'); return; }
+  if(selMat===null){ toast('⚠️ Selecciona un producto'); return; }
+  const item = CATS[selCat].items[selMat];
+
+  const reqData = {
+    room, item, qty, note, priority: selPri,
+    category: selCat, categoryLabel: CATS[selCat].l,
+    status: 'pending',
+    userName: CU.name, userId: CU.uid, userRole: CU.role,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    hotel: 'HYDE_HOTEL'
+  };
+
+  try {
+    const ref = await db.collection(C.requests).add(reqData);
+
+    // Auto-deduct from inventory
+    await autoDeductInventory(item, qty, room);
+
+    // Chat notification
+    await sendChatNotification(`${CATS[selCat].l.split(' ')[0]} *Hab. ${room}* — ${item} ×${qty}${note?' ('+note+')':''}${selPri==='urgent'?' 🚨 *URGENTE*':''}`, CU.name, 'housekeeping');
+
+    // If urgent, open WA directly
+    if(selPri==='urgent'){
+      const msg=`🚨 *SOLICITUD URGENTE*\n🏨 Hyde House Hotel\n📍 Hab. ${room}\n📦 ${item} × ${qty}${note?'\n📝 '+note:''}\n👤 ${CU.name}\n⏰ ${getT()}`;
+      openWA('almacenero', msg);
+    }
+
+    selMat=null; renderMatGrid();
+    document.getElementById('req-note').value='';
+    document.getElementById('req-qty').value='1';
+    toast(selPri==='urgent'?'🚨 Solicitud URGENTE enviada':'✅ Solicitud enviada');
+    if(navigator.vibrate) navigator.vibrate(selPri==='urgent'?[100,50,100]:50);
+  } catch(e){
+    toast('❌ Error al enviar: '+e.message);
+  }
+}
+
+async function autoDeductInventory(itemName, qty, room){
+  // Find matching product
+  try {
+    const snap = await db.collection(C.inventory).get();
+    const itemKey = itemName.split('/')[0].toLowerCase().trim();
+    let bestMatch = null;
+    snap.docs.forEach(d => {
+      const p = d.data();
+      const pname = (p.name||'').toLowerCase();
+      if(pname.includes(itemKey) || itemKey.includes(pname.split('/')[0]?.toLowerCase().trim())){
+        bestMatch = { id:d.id, ...p };
+      }
+    });
+    if(bestMatch){
+      const newFinal = Math.max(0, calcFinal(bestMatch) - qty);
+      const diff = calcFinal(bestMatch) - newFinal;
+      await db.collection(C.inventory).doc(bestMatch.id).update({
+        exits: firebase.firestore.FieldValue.increment(diff),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      // Record movement
+      await db.collection(C.movements).add({
+        productId: bestMatch.id,
+        productName: bestMatch.name,
+        productSku: bestMatch.sku||'',
+        type: 'exit',
+        qty: diff,
+        before: calcFinal(bestMatch),
+        after: newFinal,
+        reason: `Solicitud Hab. ${room} — ${CU.name}`,
+        userId: CU.uid, userName: CU.name,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        hotel: 'HYDE_HOTEL'
+      });
+    }
+  } catch(e){ console.warn('Inventory deduct error:', e); }
+}
+
+// ════════════════════════════════════════════
+// UPDATE REQUEST STATUS
+// ════════════════════════════════════════════
+async function updateRequestStatus(id, status){
+  const msgs = {
+    approved:   `✅ Solicitud aprobada — procesando`,
+    preparing:  `📦 Preparando materiales para entrega`,
+    delivered:  `🎉 Entregado — ¡Todo listo! Gracias equipo`,
+    closed:     `🔒 Solicitud cerrada`
+  };
+  try {
+    await db.collection(C.requests).doc(id).update({
+      status,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: CU.uid
+    });
+    if(msgs[status]){
+      await sendChatNotification(msgs[status], 'Equipo HK', 'housekeeping');
+    }
+    toast('✅ Estado actualizado');
+  } catch(e){
+    toast('❌ '+e.message);
+  }
+}
+
+// ════════════════════════════════════════════
+// RENDER REQUESTS
+// ════════════════════════════════════════════
+function renderRequestFeed(reqs){
+  renderMyRequests(reqs);
+  renderLiveFeed(reqs);
+}
+
+function renderMyRequests(reqs){
+  const el=document.getElementById('req-list');
+  if(!el)return;
+  const filtered = reqs
+    ? (activeFilter==='all' ? reqs : reqs.filter(r=>r.status===activeFilter))
+    : [];
+  if(!filtered.length){
+    el.innerHTML='<div class="empty"><div class="empty-ico">📋</div><div class="empty-title">Sin solicitudes</div><div class="empty-sub">Las solicitudes del equipo aparecerán aquí</div></div>';
+    return;
+  }
+  const canApprove = ['supervisor','gerente','admin'].includes(CU.role);
+  el.innerHTML=filtered.slice(0,40).map(r=>{
+    const st = REQ_STATUS[r.status]||REQ_STATUS.pending;
+    const isUrgent = r.priority==='urgent';
+    const bg = CATS[r.category]?.bg||'#f3f4f6';
+    return`<div class="req-card${isUrgent?' urgent':''}">
+      <div class="req-card-hdr">
+        <div class="req-emo" style="background:${bg}">${CATS[r.category]?.l.split(' ')[0]||'📦'}</div>
+        <div class="req-info">
+          <div class="req-title">${r.item} × ${r.qty}${isUrgent?' 🚨':''}</div>
+          <div class="req-meta">Hab. ${r.room} · ${r.userName}</div>
+          <div class="req-time">${r.createdAt?.toDate?.()?.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})||r.time||'—'}</div>
+        </div>
+        <span class="bdg ${st.cls}">${st.label}</span>
+      </div>
+      ${r.note?`<div style="font-size:12px;color:var(--text-2);font-style:italic;margin-bottom:8px;padding:0 2px">${r.note}</div>`:''}
+      <div class="req-actions">
+        ${canApprove && r.status==='pending' ? `<button class="btn b" onclick="updateRequestStatus('${r.id}','approved')">✓ Aprobar</button>`:'' }
+        ${(CU.role==='almacenero'||canApprove) && r.status==='approved' ? `<button class="btn p" onclick="updateRequestStatus('${r.id}','preparing')">📦 Preparando</button>`:'' }
+        ${(CU.role==='almacenero'||canApprove) && r.status==='preparing' ? `<button class="btn g" onclick="updateRequestStatus('${r.id}','delivered')">✅ Entregar</button>`:'' }
+        ${canApprove && r.status==='delivered' ? `<button class="btn n" onclick="updateRequestStatus('${r.id}','closed')">🔒 Cerrar</button>`:'' }
+        <button class="btn gold" onclick="sendReqWA('${r.id}')">📲 WA</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderLiveFeed(reqs){
+  const el=document.getElementById('live-feed');
+  if(!el)return;
+  const active = (reqs||[]).filter(r=>r.status!=='closed'&&r.status!=='delivered').slice(0,50);
+  _s('live-cnt', active.length+' pendientes');
+  if(!active.length){
+    el.innerHTML='<div class="empty"><div class="empty-ico">📡</div><div class="empty-sub">Todo al día — sin pendientes</div></div>';
+    return;
+  }
+  el.innerHTML=active.map(r=>{
+    const st=REQ_STATUS[r.status]||REQ_STATUS.pending;
+    const isUrgent=r.priority==='urgent';
+    const bg=CATS[r.category]?.bg||'#f3f4f6';
+    return`<div class="feed-item${isUrgent?' urgent':''}">
+      <div class="feed-emo" style="background:${bg}">${CATS[r.category]?.l.split(' ')[0]||'📦'}</div>
+      <div class="feed-body">
+        <div class="feed-title">${r.item} ×${r.qty} — Hab. ${r.room}${isUrgent?' 🚨':''}</div>
+        <div class="feed-meta">${r.userName} · <span class="bdg ${st.cls}" style="font-size:9px">${st.label}</span></div>
+        <div style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap">
+          ${r.status==='pending'?`<button class="btn b" style="height:26px;font-size:10px" onclick="updateRequestStatus('${r.id}','approved')">✓ Aprobar</button>`:''}
+          ${r.status==='approved'?`<button class="btn p" style="height:26px;font-size:10px" onclick="updateRequestStatus('${r.id}','preparing')">📦 Preparar</button>`:''}
+          ${r.status==='preparing'?`<button class="btn g" style="height:26px;font-size:10px" onclick="updateRequestStatus('${r.id}','delivered')">✅ Entregar</button>`:''}
+          <button class="btn gold" style="height:26px;font-size:10px" onclick="sendReqWA('${r.id}')">📲</button>
+        </div>
+      </div>
+      <div class="feed-time">${r.createdAt?.toDate?.()?.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})||'—'}</div>
+    </div>`;
+  }).join('');
+}
+
+function filterReqs(f){
+  activeFilter=f;
+  document.querySelectorAll('.pipe-step').forEach((el,i)=>{
+    const states=['all','pending','approved','preparing','delivered'];
+    el.className='pipe-step'+(states[i]===f?' current':'');
+  });
+}
+
+// ════════════════════════════════════════════
+// INVENTORY
+// ════════════════════════════════════════════
+function calcFinal(p){ return Math.max(0,(p.initialStock||0)+(p.entries||0)-(p.exits||0)); }
+function calcPct(p){ const max=Math.max((p.initialStock||0)+(p.entries||0),1); return Math.round((calcFinal(p)/max)*100); }
+function stockStatus(p){ const f=calcFinal(p); return f===0?'out':f<=(p.minimum||0)?'low':'ok'; }
+function stockColor(s){ return s==='ok'?'var(--green)':s==='low'?'var(--amber)':'var(--red)'; }
+function stockBadge(s){ return {ok:'<span class="bdg ok">✅ OK</span>',low:'<span class="bdg low">⚠️ Bajo</span>',out:'<span class="bdg out">🔴 Agotado</span>'}[s]||''; }
+
+function renderInventory(prods){
+  const el=document.getElementById('inv-list');
+  if(!el)return;
+  const q=(document.getElementById('inv-search')||{}).value||'';
+  let data = prods || [];
+  if(q) data=data.filter(p=>(p.name||'').toLowerCase().includes(q.toLowerCase())||(p.sku||'').toLowerCase().includes(q.toLowerCase()));
+
+  if(!data.length){
+    el.innerHTML=`<div class="empty"><div class="empty-ico">📦</div><div class="empty-title">Inventario vacío</div><div class="empty-sub">Añade productos pulsando "+ Añadir".<br>El inventario comienza en 0 — establece la existencia inicial de cada producto.</div></div>`;
+    return;
+  }
+
+  const catOrder=['linen','refill','supply','clean','other'];
+  const catNames={linen:'🛏 Linen / Ropa',refill:'🧴 Refill / Amenities',supply:'🧻 Supplies',clean:'🧼 Limpieza',other:'📦 Otros'};
+  const catBgs={linen:'#dbeafe',refill:'#d1fae5',supply:'#fef3c7',clean:'#ede9fe',other:'#f3f4f6'};
+  const catIcos={linen:'🛏',refill:'🧴',supply:'🧻',clean:'🧼',other:'📦'};
+
+  el.innerHTML=catOrder.map(cat=>{
+    const items=data.filter(p=>p.category===cat);
+    if(!items.length)return'';
+    const lowCount=items.filter(p=>stockStatus(p)!=='ok').length;
+    const isOpen=invExpanded[cat];
+    return`<div class="inv-section">
+      <div class="inv-section-hdr" onclick="toggleInvSection('${cat}')">
+        <div style="width:34px;height:34px;border-radius:9px;background:${catBgs[cat]};display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">${catIcos[cat]}</div>
+        <div class="inv-section-title">${catNames[cat]} <span style="opacity:.6;font-weight:400">(${items.length})</span></div>
+        ${lowCount?`<span class="inv-section-badge" style="background:rgba(220,38,38,.2);color:#fca5a5">⚠️ ${lowCount}</span>`:
+          `<span class="inv-section-badge">✅</span>`}
+        <span style="font-size:18px;color:rgba(255,255,255,.5);transition:transform .25s${isOpen?';transform:rotate(90deg)':''}">›</span>
+      </div>
+      <div class="inv-body${isOpen?' open':''}">
+        ${items.map(p=>{
+          const fin=calcFinal(p), s=stockStatus(p), pct=calcPct(p);
+          return`<div class="inv-row">
+            <div class="inv-row-left">
+              <div class="inv-pname">${p.name}</div>
+              ${p.sku?`<div class="inv-psku">${p.sku}</div>`:''}
+              <div class="inv-pmeta">
+                Inicio: <strong>${p.initialStock||0}</strong> 
+                +${p.entries||0} −${p.exits||0} 
+                = <strong>${fin}</strong> ${p.unit||'ud'} · Mín: ${p.minimum||0}
+                ${p.supplier?` · ${p.supplier}`:''}
+              </div>
+              <div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap">
+                ${stockBadge(s)}
+                <button class="btn gold" style="height:26px;font-size:10px" onclick="openAdjustModal('${p.id}')">✏️ Ajustar</button>
+                <button class="btn b" style="height:26px;font-size:10px" onclick="openEditProd('${p.id}')">⚙️ Editar</button>
+                <button class="btn wa" style="height:26px;font-size:10px" onclick="alertSingleProd('${p.id}')">📲 WA</button>
+              </div>
+            </div>
+            <div class="inv-right">
+              <div class="inv-qty" style="color:${stockColor(s)}">${fin}</div>
+              <div class="inv-unit">${p.unit||'ud'}</div>
+              <div class="mini-bar"><div class="mini-fill" style="width:${pct}%;background:${stockColor(s)}"></div></div>
+              ${p.price?`<div style="font-size:9px;color:var(--text-3);margin-top:3px">$${(fin*(p.price||0)).toFixed(0)}</div>`:''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleInvSection(cat){
+  invExpanded[cat]=!invExpanded[cat];
+  renderInventory(null);
+  // Re-fetch current prods
+  db.collection(C.inventory).orderBy('category').get().then(snap=>{
+    renderInventory(snap.docs.map(d=>({id:d.id,...d.data()})));
+  }).catch(()=>{});
+}
+
+// ════════════════════════════════════════════
+// ADD / EDIT / DELETE PRODUCT
+// ════════════════════════════════════════════
+async function saveProduct(){
+  const sku      = document.getElementById('pm-sku').value.trim();
+  const cat      = document.getElementById('pm-cat').value;
+  const name     = document.getElementById('pm-name').value.trim();
+  const nameEn   = document.getElementById('pm-name-en').value.trim();
+  const unit     = document.getElementById('pm-unit').value.trim()||'ud';
+  const supplier = document.getElementById('pm-supplier').value.trim();
+  const init     = parseFloat(document.getElementById('pm-init').value)||0;
+  const min      = parseFloat(document.getElementById('pm-min').value)||5;
+  const max      = parseFloat(document.getElementById('pm-max').value)||100;
+  const price    = parseFloat(document.getElementById('pm-price').value)||0;
+  if(!name){ toast('⚠️ El nombre es obligatorio'); return; }
+  const fullName = nameEn ? `${name} / ${nameEn}` : name;
+  try {
+    await db.collection(C.inventory).add({
+      sku, category:cat, name:fullName, unit, supplier,
+      initialStock:init, entries:0, exits:0,
+      minimum:min, maximum:max, price,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      hotel:'HYDE_HOTEL', createdBy:CU.uid
+    });
+    closeModal('add-prod-modal');
+    toast(`✅ "${fullName}" añadido al inventario`);
+    // Reset form
+    ['pm-sku','pm-name','pm-name-en','pm-unit','pm-supplier'].forEach(id=>{document.getElementById(id).value='';});
+    document.getElementById('pm-init').value='0';
+    document.getElementById('pm-min').value='5';
+    document.getElementById('pm-max').value='100';
+    document.getElementById('pm-price').value='0';
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+let _editProds = {};  // cache
+async function openEditProd(id){
+  openModal('edit-prod-modal');
+  document.getElementById('ep-id').value=id;
+  try {
+    const snap=await db.collection(C.inventory).doc(id).get();
+    const p=snap.data();
+    _editProds[id]=p;
+    document.getElementById('ep-sku').value=p.sku||'';
+    document.getElementById('ep-cat').value=p.category||'supply';
+    document.getElementById('ep-name').value=p.name||'';
+    document.getElementById('ep-unit').value=p.unit||'ud';
+    document.getElementById('ep-supplier').value=p.supplier||'';
+    document.getElementById('ep-init').value=p.initialStock||0;
+    document.getElementById('ep-min').value=p.minimum||0;
+    document.getElementById('ep-max').value=p.maximum||0;
+    document.getElementById('ep-price').value=p.price||0;
+  } catch(e){}
+}
+async function updateProduct(){
+  const id=document.getElementById('ep-id').value;
+  try {
+    await db.collection(C.inventory).doc(id).update({
+      sku:       document.getElementById('ep-sku').value.trim(),
+      category:  document.getElementById('ep-cat').value,
+      name:      document.getElementById('ep-name').value.trim(),
+      unit:      document.getElementById('ep-unit').value.trim()||'ud',
+      supplier:  document.getElementById('ep-supplier').value.trim(),
+      initialStock: parseFloat(document.getElementById('ep-init').value)||0,
+      minimum:   parseFloat(document.getElementById('ep-min').value)||0,
+      maximum:   parseFloat(document.getElementById('ep-max').value)||0,
+      price:     parseFloat(document.getElementById('ep-price').value)||0,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    closeModal('edit-prod-modal');
+    toast('✅ Producto actualizado');
+  } catch(e){ toast('❌ '+e.message); }
+}
+async function deleteProduct(){
+  const id=document.getElementById('ep-id').value;
+  if(!confirm('¿Eliminar este producto del inventario?'))return;
+  try {
+    await db.collection(C.inventory).doc(id).delete();
+    closeModal('edit-prod-modal');
+    toast('🗑 Producto eliminado');
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+// ════════════════════════════════════════════
+// STOCK ADJUSTMENT (KARDEX)
+// ════════════════════════════════════════════
+let _adjProd = null;
+async function openAdjustModal(id){
+  openModal('adjust-modal');
+  document.getElementById('adj-id').value=id;
+  try {
+    const snap=await db.collection(C.inventory).doc(id).get();
+    _adjProd={id,...snap.data()};
+    document.getElementById('adj-title').textContent='Ajuste: '+(_adjProd.name||'Producto');
+    document.getElementById('adj-prod-name').textContent=_adjProd.name||'';
+    const cur=calcFinal(_adjProd);
+    document.getElementById('adj-current').textContent=cur+' '+(_adjProd.unit||'ud');
+    document.getElementById('adj-qty').value=cur;
+  } catch(e){}
+}
+async function saveAdjustment(){
+  const id     = document.getElementById('adj-id').value;
+  const newQty = parseFloat(document.getElementById('adj-qty').value)||0;
+  const reason = document.getElementById('adj-reason').value;
+  const note   = document.getElementById('adj-note').value.trim();
+  if(!_adjProd){ closeModal('adjust-modal'); return; }
+  const before = calcFinal(_adjProd);
+  const diff   = newQty - before;
+  try {
+    // Single atomic update — avoids double-write bug
+    if(diff !== 0){
+      const upd = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+      if(diff > 0) upd.entries = firebase.firestore.FieldValue.increment(diff);
+      else         upd.exits   = firebase.firestore.FieldValue.increment(Math.abs(diff));
+      await db.collection(C.inventory).doc(id).update(upd);
+    }
+    // Kardex movement record
+    await db.collection(C.movements).add({
+      productId:id, productName:_adjProd.name, productSku:_adjProd.sku||'',
+      type:'adjust', qty:Math.abs(diff), before, after:newQty,
+      reason, note, userId:CU.uid, userName:CU.name,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      hotel:'HYDE_HOTEL'
+    });
+    closeModal('adjust-modal');
+    toast(`✅ Ajuste aplicado: ${before} → ${newQty} ${_adjProd.unit||'ud'}`);
+  } catch(e){ toast('❌ '+e.message); }
+} return; }
+  const before = calcFinal(_adjProd);
+  const diff   = newQty - before;
+  try {
+    // Single atomic update — no double-write
+    if(diff !== 0){
+      const upd = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+      if(diff > 0) upd.entries = firebase.firestore.FieldValue.increment(diff);
+      else         upd.exits   = firebase.firestore.FieldValue.increment(Math.abs(diff));
+      await db.collection(C.inventory).doc(id).update(upd);
+    }
+    // Kardex movement
+    await db.collection(C.movements).add({
+      productId:id, productName:_adjProd.name, productSku:_adjProd.sku||'',
+      type:'adjust', qty:Math.abs(diff), before, after:newQty,
+      reason, note, userId:CU.uid, userName:CU.name,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      hotel:'HYDE_HOTEL'
+    });
+    closeModal('adjust-modal');
+    toast(`✅ Ajuste aplicado: ${before} → ${newQty} ${_adjProd.unit||'ud'}`);
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+// ════════════════════════════════════════════
+// STOCK ENTRY
+// ════════════════════════════════════════════
+async function addStockEntry(){
+  const pid   = document.getElementById('si-prod').value;
+  const qty   = parseFloat(document.getElementById('si-qty').value)||0;
+  const price = parseFloat(document.getElementById('si-price').value)||0;
+  const type  = document.getElementById('si-type').value;
+  const ref   = document.getElementById('si-ref').value.trim()||'Entrada';
+  const note  = document.getElementById('si-note').value.trim();
+  if(!pid||qty<=0){ toast('⚠️ Selecciona producto y cantidad'); return; }
+  try {
+    const snap=await db.collection(C.inventory).doc(pid).get();
+    const p=snap.data();
+    const before=calcFinal(p);
+    await db.collection(C.inventory).doc(pid).update({
+      entries: firebase.firestore.FieldValue.increment(qty),
+      price: price>0 ? price : (p.price||0),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await db.collection(C.movements).add({
+      productId:pid, productName:p.name||'', productSku:p.sku||'',
+      type, qty, before, after:before+qty,
+      reason:ref, note, userId:CU.uid, userName:CU.name,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      hotel:'HYDE_HOTEL'
+    });
+    toast(`✅ +${qty} ${p.unit||'ud'} de ${p.name}`);
+    ['si-qty','si-price','si-ref','si-note'].forEach(id=>document.getElementById(id).value='');
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+// ════════════════════════════════════════════
+// KARDEX RENDER
+// ════════════════════════════════════════════
+function renderKardex(movs){
+  const body=document.getElementById('kardex-body');
+  if(!body)return;
+  const prodF=document.getElementById('kardex-prod')?.value||'';
+  const typeF=document.getElementById('kardex-type')?.value||'';
+  let data=movs||[];
+  if(prodF) data=data.filter(m=>m.productId===prodF||m.productName?.includes(prodF));
+  if(typeF) data=data.filter(m=>m.type===typeF);
+  const typeLabels={entry:'↑ Entrada',exit:'↓ Salida',adjust:'⇅ Ajuste',damage:'✗ Daño',transfer:'⇄ Traslado'};
+  const typeColors={entry:'var(--green)',exit:'var(--red)',adjust:'var(--amber)',damage:'var(--purple)',transfer:'var(--blue)'};
+  body.innerHTML=data.slice(0,200).map(m=>{
+    const dt=m.createdAt?.toDate?.();
+    return`<tr>
+      <td>${dt?.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'2-digit'})||'—'}</td>
+      <td style="font-family:var(--mono);font-size:10px">${dt?.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})||'—'}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.productName||'—'}</td>
+      <td style="color:${typeColors[m.type]||'var(--text)'};font-weight:600;font-size:11px">${typeLabels[m.type]||m.type}</td>
+      <td style="font-family:var(--mono);font-weight:700;color:${typeColors[m.type]||'var(--text)'}">${m.type==='exit'||m.type==='damage'?'-':'+'+(m.qty||0)}</td>
+      <td style="font-family:var(--mono)">${m.before??'—'}</td>
+      <td style="font-family:var(--mono);font-weight:600">${m.after??'—'}</td>
+      <td style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.userName||'—'}</td>
+      <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-2)">${m.reason||m.note||'—'}</td>
+    </tr>`;
+  }).join('');
+  if(!body.innerHTML) body.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text-3);padding:20px">Sin movimientos registrados</td></tr>';
+}
+
+// ════════════════════════════════════════════
+// ALERTS
+// ════════════════════════════════════════════
+function renderAlerts(prods){
+  const el=document.getElementById('alerts-list');
+  if(!el) return;
+  let data = prods;
+  if(!data){
+    // Try to get from Firestore (sync fallback)
+    el.innerHTML='<div class="empty"><div class="empty-ico">⏳</div><div class="empty-sub">Cargando alertas...</div></div>';
+    db.collection(C.inventory).get().then(snap=>{
+      renderAlerts(snap.docs.map(d=>({id:d.id,...d.data()})));
+    }).catch(()=>{});
+    return;
+  }
+  const low=data.filter(p=>stockStatus(p)!=='ok');
+  const dashEl=document.getElementById('dash-alerts');
+  if(low.length>0){
+    const critMsg=`🚨 *Alerta de inventario — ${HOTEL.name}*\n📅 ${getD()} ${getT()}\n\n${low.filter(p=>stockStatus(p)==='out').length?'🔴 *AGOTADOS:*\n'+low.filter(p=>stockStatus(p)==='out').map(p=>`  • ${p.name} — 0 ${p.unit||'ud'}`).join('\n')+'\n':''}\n${low.filter(p=>stockStatus(p)==='low').length?'⚠️ *STOCK BAJO:*\n'+low.filter(p=>stockStatus(p)==='low').map(p=>`  • ${p.name} — ${calcFinal(p)} ${p.unit||'ud'} (mín: ${p.minimum||0})`).join('\n'):''}\n\nTotal: ${low.length} productos. Favor revisar y reponer. ¡Gracias! 🙏`;
+    document.getElementById('alert-text').textContent=critMsg;
+    if(dashEl) dashEl.innerHTML=`<div class="alert-banner crit"><div class="ab-ico">🚨</div><div class="ab-body"><div class="ab-title">${low.length} producto(s) bajo el mínimo</div><div class="ab-sub">${low.slice(0,3).map(p=>p.name).join(', ')}${low.length>3?'...':''}</div><div class="ab-act"><button class="btn r" style="height:26px;font-size:11px;background:#fff5f5" onclick="sendAllAlertsWA()">📲 Alertar WA</button><button class="btn n" style="height:26px;font-size:11px" onclick="goTo('alerts')">Ver alertas</button></div></div></div>`;
+  } else {
+    if(dashEl) dashEl.innerHTML='';
+  }
+  if(!low.length){
+    el.innerHTML='<div class="empty"><div class="empty-ico">✅</div><div class="empty-title">Sin alertas</div><div class="empty-sub">Todo el stock está sobre el mínimo. ¡Buen trabajo!</div></div>';
+    return;
+  }
+  el.innerHTML=low.map(p=>{
+    const s=stockStatus(p),f=calcFinal(p),pct=calcPct(p);
+    return`<div class="alert-banner ${s==='out'?'crit':'warn'}">
+      <div class="ab-ico">${s==='out'?'🔴':'⚠️'}</div>
+      <div class="ab-body">
+        <div class="ab-title">${p.name} ${p.sku?`<span style="font-size:10px;font-weight:400">(${p.sku})</span>`:''}</div>
+        <div class="ab-sub">
+          Existencia final: <strong>${f} ${p.unit||'ud'}</strong> · Mínimo: ${p.minimum||0}<br>
+          Inicio: ${p.initialStock||0} · +${p.entries||0} · −${p.exits||0}
+        </div>
+        <div style="height:5px;background:rgba(0,0,0,.1);border-radius:3px;margin:7px 0"><div style="height:100%;width:${pct}%;background:currentColor;border-radius:3px"></div></div>
+        <div class="ab-act">
+          <button class="btn" style="height:26px;font-size:10px;background:rgba(255,255,255,.5)" onclick="alertSingleProd('${p.id}')">📲 WA almacenero</button>
+          <button class="btn" style="height:26px;font-size:10px;background:rgba(255,255,255,.5)" onclick="openAdjustModal('${p.id}')">✏️ Ajustar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateAlertBadges(prods){
+  const low=(prods||[]).filter(p=>stockStatus(p)!=='ok').length;
+  _dot('dot-alerts', low>0);
+  _dot('dot-almacen', false);
+}
+
+function updateDashKPIs(reqs){
+  const today=new Date().toDateString();
+  const todayR=(reqs||[]).filter(r=>r.createdAt?.toDate?.()?.toDateString()===today||r.ts===today);
+  const pend=(reqs||[]).filter(r=>r.status==='pending').length;
+  const urg=(reqs||[]).filter(r=>r.priority==='urgent'&&r.status!=='closed').length;
+  const del=(reqs||[]).filter(r=>r.status==='delivered'&&r.createdAt?.toDate?.()?.toDateString()===today).length;
+  _s('kpi-req-today', todayR.length||reqs?.length||0);
+  _s('kpi-pending',   pend);
+  _s('kpi-urgent',    urg);
+  _s('kpi-delivered', del);
+  _dot('dot-requests', pend>0);
+  // Calculate daily cost from delivered requests
+  calcDailyCost();
+}
+
+async function calcDailyCost(){
+  try {
+    const snap = await db.collection(C.inventory).get();
+    const prods = snap.docs.map(d=>({id:d.id,...d.data()}));
+    const todayExits = prods.reduce((sum,p)=>{
+      // estimate: total exits * price / days_since_start (simplified daily avg)
+      return sum + (p.exits||0)*(p.price||0);
+    },0);
+    // Show total inventory value on hand as approximation
+    const val = prods.reduce((sum,p)=>sum+calcFinal(p)*(p.price||0),0);
+    const dailyAvg = todayExits > 0 ? (todayExits/30) : 0;
+    _s('kpi-cost-day', '$'+dailyAvg.toFixed(0));
+    _s('kpi-cost-month', '$'+todayExits.toFixed(0));
+  } catch(e){}
+}
+
+async function sendAllAlertsWA(target='almacenero'){
+  const txt=document.getElementById('alert-text').textContent;
+  if(!txt){ toast('⚠️ Sin alertas que enviar'); return; }
+  document.getElementById('alert-preview').style.display='block';
+  openWA(target, txt);
+}
+function copyAlerts(){
+  const t=document.getElementById('alert-text').textContent;
+  if(!t){ toast('⚠️ Sin alertas'); return; }
+  navigator.clipboard.writeText(t).then(()=>toast('📋 Copiado'));
+}
+async function alertSingleProd(id){
+  try {
+    const snap=await db.collection(C.inventory).doc(id).get();
+    const p=snap.data();
+    const f=calcFinal(p);
+    const msg=`🏨 *${HOTEL.name} — Stock bajo*\n⚠️ *${p.name}*\nActual: ${f} ${p.unit||'ud'} (mínimo: ${p.minimum||0})\nSKU: ${p.sku||'—'} · Proveedor: ${p.supplier||'—'}\n\nFavor reponer. ¡Gracias! 🙏`;
+    openWA('almacenero',msg);
+  } catch(e){}
+}
+
+// ════════════════════════════════════════════
+// CHAT — MULTI-CHANNEL FIRESTORE
+// ════════════════════════════════════════════
+let chatUnsubscribe = null;
+function switchChannel(ch){
+  activeChannel=ch;
+  ['housekeeping','almacen','supervisores','mantenimiento'].forEach(c=>{
+    document.getElementById('ch-'+c)?.classList.toggle('on',c===ch);
+  });
+  const titles={housekeeping:'🧹 Housekeeping',almacen:'📦 Almacén',supervisores:'👔 Supervisores',mantenimiento:'🔧 Mantenimiento'};
+  _s('chat-title', titles[ch]||ch);
+  listenChat(ch);
+}
+function listenChat(channel){
+  if(chatUnsubscribe){ chatUnsubscribe(); chatUnsubscribe=null; }
+  const el=document.getElementById('chat-msgs');
+  if(!el)return;
+  chatUnsubscribe = db.collection(C.chat)
+    .where('channel','==',channel)
+    .orderBy('createdAt','asc')
+    .limitToLast(80)
+    .onSnapshot(snap=>{
+      const msgs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderChatMsgs(msgs);
+    }, ()=>{
+      // Fallback: show nothing
+    });
+}
+function renderChatMsgs(msgs){
+  const el=document.getElementById('chat-msgs');
+  if(!el)return;
+  if(!msgs||!msgs.length){
+    el.innerHTML='<div style="text-align:center;padding:20px;color:#888;font-size:12px">Sin mensajes en este canal</div>';
+    return;
+  }
+  el.innerHTML=msgs.map(m=>{
+    const isMe=m.userId===CU?.uid;
+    const isSys=m.isSystem;
+    const ts=m.createdAt?.toDate?.()?.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})||m.time||'';
+    if(isSys) return`<div class="chat-bub sys">${m.text}<div class="chat-ts">${ts}</div></div>`;
+    return`<div class="chat-bub${isMe?' out':''}">
+      ${!isMe?`<div class="chat-sender">${m.userName||'Usuario'}</div>`:''}
+      ${(m.text||'').replace(/\*([^*]+)\*/g,'<strong>$1</strong>')}
+      <div class="chat-ts">${ts}</div>
+    </div>`;
+  }).join('');
+  el.scrollTop=el.scrollHeight;
+  const sub=document.getElementById('chat-sub');
+  if(sub) sub.textContent=new Set(msgs.map(m=>m.userId)).size+' miembro(s) activo(s)';
+}
+async function sendChatMsg(){
+  const inp=document.getElementById('chat-input');
+  const txt=inp.value.trim();
+  if(!txt)return;
+  inp.value='';
+  await sendChatNotification(txt, CU.name, activeChannel);
+}
+async function sendChatNotification(text, senderName, channel){
+  try {
+    await db.collection(C.chat).add({
+      text, channel,
+      userId: CU?.uid||'system',
+      userName: senderName||CU?.name||'Sistema',
+      isSystem: senderName==='Sistema'||senderName==='Equipo HK',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      hotel:'HYDE_HOTEL'
+    });
+  } catch(e){ console.warn('Chat error:', e); }
+}
+function quickMsg(t){ sendChatNotification(t,'Equipo HK',activeChannel); }
+document.getElementById('chat-input').addEventListener('keydown',e=>{ if(e.key==='Enter')sendChatMsg(); });
+
+// ════════════════════════════════════════════
+// WHATSAPP
+// ════════════════════════════════════════════
+function openWAModal(){ openModal('wa-modal'); fillWAModal(); }
+function fillWAModal(){
+  document.getElementById('wa-alm').value=WA.almacenero||'';
+  document.getElementById('wa-sup').value=WA.supervisor||'';
+  document.getElementById('wa-mnt').value=WA.mantenimiento||'';
+  document.getElementById('wa-rec').value=WA.recepcion||'';
+  document.getElementById('wa-grp').value=WA.grupoLink||'';
+  if(!WA.grupoLink) setTimeout(()=>{ document.getElementById('wa-grp')?.focus(); },300);
+}
+async function saveWAContacts(){
+  WA = {
+    almacenero:   (document.getElementById('wa-alm').value||'').trim(),
+    supervisor:   (document.getElementById('wa-sup').value||'').trim(),
+    mantenimiento:(document.getElementById('wa-mnt').value||'').trim(),
+    recepcion:    (document.getElementById('wa-rec').value||'').trim(),
+    grupoLink:    (document.getElementById('wa-grp').value||'').trim()
+  };
+  LS.s('wa', WA);
+  try {
+    await db.collection(C.settings).doc('whatsapp').set({ ...WA, updatedAt:firebase.firestore.FieldValue.serverTimestamp() });
+  } catch(e){}
+  closeModal('wa-modal');
+  renderWAContacts();
+  renderDirectWA();
+  const saved=[WA.almacenero&&'📦',WA.supervisor&&'👔',WA.mantenimiento&&'🔧',WA.recepcion&&'🛎',WA.grupoLink&&'💬'].filter(Boolean).join(' ');
+  toast('✅ Guardado: '+(saved||'ningún número'));
+}
+function waURL(target,text){
+  let phone='';
+  if(target==='almacenero')       phone=WA.almacenero||'';
+  else if(target==='supervisor')  phone=WA.supervisor||'';
+  else if(target==='mantenimiento')phone=WA.mantenimiento||'';
+  else if(target==='recepcion')   phone=WA.recepcion||'';
+  else if(target==='grupo'){
+    const v=(WA.grupoLink||'').trim();
+    if(!v){ toast('⚠️ Configura el grupo en Config → WhatsApp'); return null; }
+    if(v.startsWith('http')) return v;
+    phone=v;
+  } else { phone=target; }
+  phone=(phone||'').replace(/[\s\-().]/g,'');
+  if(!phone){ toast('⚠️ Número no configurado. Ve a Config → WhatsApp 📱'); return null; }
+  const clean=phone.replace(/^\+/,'');
+  return 'https://wa.me/'+clean+(text?'?text='+encodeURIComponent(text):'');
+}
+function openWA(target,text){ const url=waURL(target,text); if(url)window.open(url,'_blank'); }
+function renderWAContacts(){
+  const el=document.getElementById('wa-contacts-list');
+  if(!el)return;
+  const items=[
+    {label:'📦 Almacenero',   key:'almacenero',     val:WA.almacenero},
+    {label:'👔 Supervisor',    key:'supervisor',     val:WA.supervisor},
+    {label:'🔧 Mantenimiento', key:'mantenimiento',  val:WA.mantenimiento},
+    {label:'🛎 Recepción',     key:'recepcion',      val:WA.recepcion},
+    {label:'💬 Grupo HK',     key:'grupo',           val:WA.grupoLink},
+  ];
+  el.innerHTML=items.map(it=>`
+    <div class="contact-row">
+      <div class="contact-ico">${it.label.split(' ')[0]}</div>
+      <div class="contact-body">
+        <div class="contact-name">${it.label.slice(3)}</div>
+        <div class="contact-num">${it.val||'<span style="color:var(--red)">⚠️ No configurado</span>'}</div>
+      </div>
+      ${it.val?`<button class="btn wa" style="height:28px;font-size:11px" onclick="testWA('${it.key}')">Test</button>`:''}
+    </div>`).join('');
+}
+function testWA(key){
+  const msgs={almacenero:'📦 Test almacenero — HK Pro Enterprise ✅',supervisor:'👔 Test supervisor ✅',mantenimiento:'🔧 Test mantenimiento ✅',recepcion:'🛎 Test recepción ✅',grupo:'💬 Test Hyde Housekeeping Team ✅'};
+  openWA(key, msgs[key]||'Test HK Pro ✅');
+}
+function renderDirectWA(){
+  const el=document.getElementById('direct-wa');
+  if(!el)return;
+  const items=[{l:'📦 Almacenero',k:'almacenero',n:WA.almacenero},{l:'👔 Supervisor',k:'supervisor',n:WA.supervisor},{l:'🔧 Mantenimiento',k:'mantenimiento',n:WA.mantenimiento},{l:'🛎 Recepción',k:'recepcion',n:WA.recepcion}];
+  if(WA.grupoLink) items.push({l:'💬 Hyde HK Team',k:'grupo',n:WA.grupoLink});
+  el.innerHTML=items.map(c=>`
+    <div class="contact-row">
+      <div class="contact-ico">${c.l.split(' ')[0]}</div>
+      <div class="contact-body">
+        <div class="contact-name">${c.l.slice(3)}</div>
+        <div class="contact-num">${c.n||'<span style="color:var(--red)">No configurado</span>'}</div>
+      </div>
+      <button class="btn wa" onclick="openWA('${c.k}','👋 Hola! Soy ${CU?.name||''} del Hyde House Hotel. Te escribo desde HK Pro.')" ${!c.n?'disabled style="opacity:.4"':''}>Abrir WA</button>
+    </div>`).join('');
+}
+function sendReqWA(id){
+  db.collection(C.requests).doc(id).get().then(snap=>{
+    const r=snap.data();
+    if(!r)return;
+    const msg=`🏨 *${HOTEL.name} — Solicitud*\n${CATS[r.category]?.l||''} — *Hab. ${r.room}*\n📦 ${r.item} × ${r.qty}${r.note?'\n📝 '+r.note:''}${r.priority==='urgent'?'\n🚨 *URGENTE*':''}\n👤 ${r.userName} · ${r.createdAt?.toDate?.()?.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})||''}`;
+    openWA('almacenero',msg);
+  }).catch(()=>{});
+}
+
+// ════════════════════════════════════════════
+// REPORTS & EXPORT
+// ════════════════════════════════════════════
+async function generateReport(period){
+  const days={daily:1,weekly:7,biweekly:15,monthly:30}[period]||7;
+  const label={daily:'Diario',weekly:'Semanal',biweekly:'Quincenal',monthly:'Mensual'}[period]||period;
+  try {
+    const [invSnap, movSnap, reqSnap] = await Promise.all([
+      db.collection(C.inventory).get(),
+      db.collection(C.movements).orderBy('createdAt','desc').limit(500).get(),
+      db.collection(C.requests).orderBy('createdAt','desc').limit(500).get()
+    ]);
+    const prods  = invSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const movs   = movSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const reqs   = reqSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const now    = new Date();
+    const fromDate = new Date(now.getTime() - days*24*60*60*1000);
+    const periodMovs=movs.filter(m=>m.createdAt?.toDate?.()>=fromDate);
+    const periodReqs=reqs.filter(r=>r.createdAt?.toDate?.()>=fromDate);
+    let txt = `${'═'.repeat(40)}\n`;
+    txt += `🏨 ${HOTEL.name}\n`;
+    txt += `📍 ${HOTEL.address}, ${HOTEL.city}\n`;
+    txt += `📊 REPORTE ${label.toUpperCase()}\n`;
+    txt += `📅 Generado: ${getD()} ${getT()}\n`;
+    txt += `${'═'.repeat(40)}\n\n`;
+    txt += `INVENTARIO (${prods.length} productos):\n${'─'.repeat(40)}\n`;
+    const cats=['linen','refill','supply','clean','other'];
+    const catNames={linen:'🛏 LINEN',refill:'🧴 REFILL',supply:'🧻 SUPPLIES',clean:'🧼 LIMPIEZA',other:'📦 OTROS'};
+    let totalValue=0;
+    cats.forEach(cat=>{
+      const items=prods.filter(p=>p.category===cat);
+      if(!items.length)return;
+      txt+=`\n${catNames[cat]}\n`;
+      items.forEach(p=>{
+        const f=calcFinal(p), s=stockStatus(p);
+        const consumed=periodMovs.filter(m=>m.productId===p.id&&(m.type==='exit'||m.type==='damage')).reduce((a,m)=>a+(m.qty||0),0);
+        const val=f*(p.price||0); totalValue+=val;
+        const stIcon=s==='ok'?'✅':s==='low'?'⚠️':'🔴';
+        txt+=`${stIcon} ${(p.name||'').substring(0,28).padEnd(28)} ${String(f).padStart(5)} ${(p.unit||'ud').padEnd(6)} ${p.minimum?'Mín:'+p.minimum:''}`;
+        if(consumed) txt+=` Consumo:${consumed}`;
+        if(val>0)    txt+=` $${val.toFixed(0)}`;
+        txt+='\n';
+      });
+    });
+    txt+=`\n${'─'.repeat(40)}\nValor total inventario: $${totalValue.toFixed(2)}\n`;
+    txt+=`\nSOLICITUDES (${periodReqs.length} en este período):\n${'─'.repeat(40)}\n`;
+    const byStatus={pending:0,approved:0,preparing:0,delivered:0,closed:0};
+    periodReqs.forEach(r=>{ byStatus[r.status]=(byStatus[r.status]||0)+1; });
+    Object.entries(byStatus).forEach(([st,cnt])=>{ if(cnt) txt+=`${REQ_STATUS[st]?.label||st}: ${cnt}\n`; });
+    txt+=`\nALERTAS:\n${'─'.repeat(40)}\n`;
+    const low=prods.filter(p=>stockStatus(p)!=='ok');
+    if(low.length){
+      low.forEach(p=>{ txt+=`${stockStatus(p)==='out'?'🔴 AGOTADO':'⚠️ BAJO'}: ${p.name} — ${calcFinal(p)} ${p.unit||'ud'} (mín: ${p.minimum||0})\n`; });
+    } else { txt+='✅ Sin alertas de stock\n'; }
+    txt+=`\n${'═'.repeat(40)}\nOK: ${prods.filter(p=>stockStatus(p)==='ok').length} | Bajo: ${prods.filter(p=>stockStatus(p)==='low').length} | Agotado: ${prods.filter(p=>stockStatus(p)==='out').length}\n${'═'.repeat(40)}`;
+    lastReportText=txt;
+    document.getElementById('report-text').textContent=txt;
+    document.getElementById('report-preview').style.display='block';
+    toast(`📊 Reporte ${label} generado`);
+  } catch(e){ toast('❌ Error generando reporte: '+e.message); }
+}
+
+function exportPDF(){
+  if(!lastReportText){ toast('⚠️ Genera primero el reporte'); return; }
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'mm', format:'a4' });
+    doc.setFontSize(16);
+    doc.setFont('helvetica','bold');
+    doc.text(HOTEL.name, 20, 20);
+    doc.setFontSize(10);
+    doc.setFont('helvetica','normal');
+    doc.text(HOTEL.address+' · '+HOTEL.city, 20, 28);
+    doc.setLineWidth(.5);
+    doc.line(20, 32, 190, 32);
+    doc.setFontSize(9);
+    const lines=lastReportText.split('\n');
+    let y=40;
+    lines.forEach(line=>{
+      if(y>280){ doc.addPage(); y=20; }
+      const clean=line.replace(/[╔═╝╚║╠╣╦╩╬─]/g,'').replace(/🏨|📍|📊|📅|🛏|🧴|🧻|🧼|📦|✅|⚠️|🔴/g,'');
+      doc.text(clean.substring(0,100), 20, y);
+      y+=5;
+    });
+    doc.save(`HKPro_${HOTEL.name.replace(/ /g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+    toast('📄 PDF descargado');
+  } catch(e){ toast('❌ Error PDF: '+e.message); }
+}
+
+function exportCSV(){
+  if(!lastReportText){ toast('⚠️ Genera primero el reporte'); return; }
+  db.collection(C.inventory).get().then(snap=>{
+    const prods=snap.docs.map(d=>({id:d.id,...d.data()}));
+    let csv='SKU,Nombre,Categoría,Unidad,Exist.Inicial,Entradas,Salidas,Exist.Final,Mínimo,Máximo,Precio,Proveedor,Estado\n';
+    prods.forEach(p=>{
+      const f=calcFinal(p), s=stockStatus(p);
+      csv+=`"${p.sku||''}","${p.name||''}","${p.category||''}","${p.unit||''}",${p.initialStock||0},${p.entries||0},${p.exits||0},${f},${p.minimum||0},${p.maximum||0},${p.price||0},"${p.supplier||''}","${s}"\n`;
+    });
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    a.download=`HKPro_Inventario_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    toast('📑 CSV descargado');
+  }).catch(e=>toast('❌ '+e.message));
+}
+
+function sendReportWA(target='almacenero'){
+  generateReport('daily').then(()=>{
+    const txt=document.getElementById('report-text').textContent;
+    openWA(target, txt.substring(0,3900));
+  }).catch(()=>{ openWA(target, lastReportText.substring(0,3900)); });
+}
+
+// ════════════════════════════════════════════
+// SCHEDULED ALERTS
+// ════════════════════════════════════════════
+function scheduleAlerts(){
+  if(alertTimer) clearInterval(alertTimer);
+  alertTimer=setInterval(async ()=>{
+    const now=new Date();
+    const hm=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+    const cfg=CFG.alerts||{};
+    const dailyTime=cfg.dailyTime||'08:00';
+    const today=now.toDateString();
+    if(hm===dailyTime && cfg.daily!==false){
+      const key='daily_alert_'+today;
+      if(!LS.g(key)){
+        LS.s(key,true);
+        await generateReport('daily');
+        const txt=document.getElementById('report-text').textContent;
+        if(txt){ openWA('almacenero',txt.substring(0,3900)); toast('🔔 Alerta diaria enviada automáticamente',5000); }
+      }
+    }
+    const day=now.getDay();
+    if(day===0 && hm==='08:00' && cfg.weekly!==false){
+      const wkey='weekly_alert_'+now.toISOString().slice(0,10);
+      if(!LS.g(wkey)){ LS.s(wkey,true); await generateReport('weekly'); openWA('almacenero',lastReportText.substring(0,3900)); toast('📊 Reporte semanal enviado'); }
+    }
+    const dom=now.getDate();
+    if(dom===15 && hm==='08:00' && cfg.biweekly!==false){
+      const bkey='bw_alert_'+now.toISOString().slice(0,10);
+      if(!LS.g(bkey)){ LS.s(bkey,true); await generateReport('biweekly'); openWA('almacenero',lastReportText.substring(0,3900)); toast('📈 Reporte quincenal enviado'); }
+    }
+    const lastDay=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+    if(dom===lastDay && hm==='08:00' && cfg.monthly!==false){
+      const mkey='monthly_alert_'+now.toISOString().slice(0,10);
+      if(!LS.g(mkey)){ LS.s(mkey,true); await generateReport('monthly'); openWA('almacenero',lastReportText.substring(0,3900)); toast('📋 Reporte mensual enviado'); }
+    }
+  }, 60000);
+}
+async function runAlertNow(){ await generateReport('daily'); const txt=document.getElementById('report-text').textContent; if(txt){ openWA('almacenero',txt.substring(0,3900)); toast('🔔 Alerta ejecutada'); } }
+
+// ════════════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════════════
+function swAlm(t){
+  ['feed','inventory','kardex','stock-in','export'].forEach(x=>{
+    const el=document.getElementById('alm-panel-'+x); if(el) el.style.display=x===t?'block':'none';
+    const tab=document.getElementById('alm-'+x); if(tab) tab.classList.toggle('on',x===t);
+  });
+  if(t==='inventory') renderInventory(null);
+  if(t==='kardex') renderKardex(null);
+}
+function swSettings(t){
+  ['wa','hotel','alerts','account'].forEach(x=>{
+    const el=document.getElementById('set-'+x); if(el) el.style.display=x===t?'':'none';
+    const tab=document.getElementById('st-'+x); if(tab) tab.classList.toggle('on',x===t);
+  });
+  if(t==='wa') renderWAContacts();
+  if(t==='hotel') loadHotelForm();
+  if(t==='account') loadAccountInfo();
+}
+function loadHotelForm(){
+  document.getElementById('h-name').value=CFG.hotelName||HOTEL.name;
+  document.getElementById('h-floors').value=CFG.floors||41;
+  document.getElementById('h-rpp').value=CFG.rpp||10;
+  document.getElementById('h-start-room').value=CFG.startRoom||100;
+  document.getElementById('h-shift1').value=(CFG.shifts||[])[0]||'07:00';
+  document.getElementById('h-shift2').value=(CFG.shifts||[])[1]||'15:00';
+  const sEl=document.getElementById('h-suites'); if(sEl) sEl.value=(CFG.suites||[]).join(', ');
+  const aEl=document.getElementById('h-areas');  if(aEl) aEl.value=(CFG.areas||[]).join(', ');
+  document.getElementById('alert-daily-time').value=CFG.alerts?.dailyTime||'08:00';
+  document.getElementById('tog-daily').checked=CFG.alerts?.daily!==false;
+  document.getElementById('tog-weekly').checked=CFG.alerts?.weekly!==false;
+  document.getElementById('tog-biweekly').checked=CFG.alerts?.biweekly!==false;
+  document.getElementById('tog-monthly').checked=CFG.alerts?.monthly!==false;
+}
+async function saveHotelConfig(){
+  CFG={...CFG,
+    hotelName: document.getElementById('h-name').value||HOTEL.name,
+    floors:    parseInt(document.getElementById('h-floors').value)||41,
+    rpp:       parseInt(document.getElementById('h-rpp').value)||10,
+    startRoom: parseInt(document.getElementById('h-start-room').value)||100,
+    shifts:    [document.getElementById('h-shift1').value,document.getElementById('h-shift2').value],
+  };
+  CFG.suites = (document.getElementById('h-suites')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+  CFG.areas  = (document.getElementById('h-areas')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+  LS.s('cfg',CFG); buildRoomSelect();
+  try { await db.collection(C.settings).doc('hotel').set({...CFG,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); } catch(e){}
+  toast('✅ Configuración del hotel guardada');
+}
+async function saveAlertConfig(){
+  const alerts={
+    daily:     document.getElementById('tog-daily').checked,
+    weekly:    document.getElementById('tog-weekly').checked,
+    biweekly:  document.getElementById('tog-biweekly').checked,
+    monthly:   document.getElementById('tog-monthly').checked,
+    dailyTime: document.getElementById('alert-daily-time').value||'08:00'
+  };
+  CFG.alerts=alerts; LS.s('cfg',CFG);
+  try { await db.collection(C.settings).doc('hotel').set({...CFG,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); } catch(e){}
+  scheduleAlerts();
+  toast('✅ Alertas configuradas');
+}
+function loadAccountInfo(){
+  if(!CU)return;
+  const el=document.getElementById('account-info');
+  if(!el)return;
+  el.innerHTML=`
+    <div class="settings-row">
+      <div class="settings-ico">${ROLES[CU.role]?.label.split(' ')[0]||'👤'}</div>
+      <div class="settings-body">
+        <div class="settings-name">${CU.name}</div>
+        <div class="settings-sub">${CU.email}<br><strong>${ROLES[CU.role]?.label||CU.role}</strong></div>
+      </div>
+    </div>`;
+  document.getElementById('acc-name').value=CU.name;
+}
+async function updateProfile(){
+  const name=document.getElementById('acc-name').value.trim();
+  if(!name){ toast('⚠️ El nombre no puede estar vacío'); return; }
+  try {
+    await auth.currentUser.updateProfile({displayName:name});
+    await db.collection(C.users).doc(CU.uid).update({name, updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    CU.name=name; applyRole();
+    toast('✅ Perfil actualizado');
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+// ════════════════════════════════════════════
+// DASHBOARD CHARTS
+// ════════════════════════════════════════════
+function updateDashCharts(){ updateRequestsChart(); }
+async function updateRequestsChart(){
+  const ctx=document.getElementById('chart-requests');
+  if(!ctx)return;
+  // Build last-7-days labels
+  const labels=[], data=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    labels.push(d.toLocaleDateString('es-ES',{weekday:'short'}));
+    data.push(0);
+  }
+  // Count requests per day
+  try {
+    const snap=await db.collection(C.requests).orderBy('createdAt','desc').limit(500).get();
+    snap.docs.forEach(doc=>{
+      const ts=doc.data().createdAt?.toDate?.();
+      if(!ts)return;
+      const now=new Date();
+      for(let i=6;i>=0;i--){
+        const d=new Date(); d.setDate(now.getDate()-i);
+        if(ts.toDateString()===d.toDateString()){ data[6-i]++; break; }
+      }
+    });
+  } catch(e){}
+  if(charts.requests) charts.requests.destroy();
+  charts.requests=new Chart(ctx,{ type:'bar', data:{ labels, datasets:[{ label:'Solicitudes', data, backgroundColor:'rgba(201,168,76,.75)', borderColor:'rgba(201,168,76,1)', borderWidth:1, borderRadius:4 }]}, options:{ plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{stepSize:1}}, x:{grid:{display:false}} }, responsive:true, maintainAspectRatio:true }});
+}
+async function updateInventoryChart(prods){
+  const ctx=document.getElementById('chart-inventory');
+  if(!ctx||!prods)return;
+  const ok=prods.filter(p=>stockStatus(p)==='ok').length;
+  const low=prods.filter(p=>stockStatus(p)==='low').length;
+  const out=prods.filter(p=>stockStatus(p)==='out').length;
+  if(charts.inventory) charts.inventory.destroy();
+  if(!ok&&!low&&!out)return;
+  charts.inventory=new Chart(ctx,{ type:'doughnut', data:{ labels:['Stock OK','Stock Bajo','Agotado'], datasets:[{ data:[ok,low,out], backgroundColor:['#059669','#d97706','#dc2626'], borderWidth:0 }]}, options:{ plugins:{ legend:{ position:'right', labels:{ font:{size:11}, color:'#6b7280', boxWidth:12 }}}, responsive:true, maintainAspectRatio:true }});
+  _s('kpi-stock-low', low);
+  _s('kpi-out', out);
+}
+
+// ════════════════════════════════════════════
+// PRODUCT SELECTS
+// ════════════════════════════════════════════
+function fillProductSelects(prods){
+  ['si-prod','kardex-prod'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const v=el.value;
+    el.innerHTML='<option value="">Todos / Seleccionar...</option>';
+    (prods||[]).forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;el.appendChild(o);});
+    el.value=v;
+  });
+}
+
+// ════════════════════════════════════════════
+// CLOCK & UTILS
+// ════════════════════════════════════════════
+function tick(){ document.getElementById('clk').textContent=new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+function getT(){ return new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}); }
+function getD(){ return new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+function _s(id,v){ const e=document.getElementById(id); if(e)e.textContent=v; }
+function _dot(id,show){ const e=document.getElementById(id); if(e)show?e.classList.add('show'):e.classList.remove('show'); }
+function toast(msg,dur=2400){
+  const el=document.getElementById('toast');
+  if(!el)return;
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('show'),dur);
+}
+function openModal(id){ document.getElementById(id)?.classList.remove('gone'); }
+function closeModal(id){ document.getElementById(id)?.classList.add('gone'); }
+
+// Close modals on backdrop click
+document.querySelectorAll('.overlay').forEach(el=>{
+  el.addEventListener('click',e=>{ if(e.target===el) el.classList.add('gone'); });
+});
+
+// ════════════════════════════════════════════
+// SERVICE WORKER
+// ════════════════════════════════════════════
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+// ════════════════════════════════════════════
+// iOS INSTALL HINT
+// ════════════════════════════════════════════
+if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone){
+  setTimeout(()=>toast('📲 Safari → Compartir → "Añadir a pantalla de inicio"',5000),8000);
+}
+</script>
+</body>
+</html>
