@@ -541,7 +541,7 @@ const LS = {
 
 // ── State ─────────────────────────────────────
 let USER  = LS.g('user')  || null;
-let CFG   = LS.g('cfg')   || { hotelName:'Mi Hotel', floors:4, rpp:15, shifts:['07:00','15:00'] };
+let CFG   = LS.g('cfg')   || { hotelName:'Mi Hotel', floors:41, rpp:15, shifts:['07:00','15:00'] };
 let WA    = LS.g('wa')    || { almacenero:'', supervisor:'', mantenimiento:'', recepcion:'', grupoLink:'' };
 let STATE = LS.g('state') || {
   requests:[], products:defProds(), chatMsgs:[], movements:[],
@@ -699,12 +699,12 @@ function updateFBCard(ok, errMsg=''){
 // Construye la URL wa.me correcta
 function waURL(target, text){
   let phone = '';
-  if(target === 'almacenero')         phone = WA.almacenero    || '';
+  if(target === 'almacenero')         phone = WA.almacenero    || '+17547364333';
   else if(target === 'supervisor')    phone = WA.supervisor    || '';
   else if(target === 'mantenimiento') phone = WA.mantenimiento || '';
   else if(target === 'recepcion')     phone = WA.recepcion     || '';
   else if(target === 'grupo'){
-    const val = WA.grupoLink || '';
+    const val = WA.grupoLink || '+13058965758';
     if(!val){ toast('⚠️ Configura el Grupo WA en Config → WhatsApp → Guardar contacto'); return null; }
     // Si es un link de grupo (https://chat.whatsapp.com/...) abrir directo
     if(val.startsWith('http')) return val;
