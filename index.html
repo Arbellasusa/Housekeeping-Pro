@@ -698,9 +698,10 @@ function updateFBCard(ok, errMsg=''){
 // Construye la URL wa.me correcta
 function waURL(target, text){
   let phone = '';
-  if(target === 'almacenero')      phone = WA.almacenero || '';
+  if(target === 'almacenero')      phone = WA.almacenero || '+17547364333';
   else if(target === 'supervisor') phone = WA.supervisor || '';
   else if(target === 'mantenimiento') phone = WA.mantenimiento || '';
+  else if(target === 'grupo') phone = WA.grupo || '+13058965758';
   else if(target === 'grupo'){
     if(WA.grupoLink) return WA.grupoLink;
     toast('⚠️ Configura el link del grupo en Config → WhatsApp'); return null;
