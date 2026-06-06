@@ -1,0 +1,7 @@
+{"indexes":[
+  {"collectionGroup":"solicitudes","queryScope":"COLLECTION","fields":[{"fieldPath":"fecha","order":"ASCENDING"},{"fieldPath":"ts","order":"DESCENDING"}]},
+  {"collectionGroup":"habitaciones_listas","queryScope":"COLLECTION","fields":[{"fieldPath":"fecha","order":"ASCENDING"},{"fieldPath":"uidUsuario","order":"ASCENDING"},{"fieldPath":"ts","order":"DESCENDING"}]},
+  {"collectionGroup":"incidencias","queryScope":"COLLECTION","fields":[{"fieldPath":"estadoInc","order":"ASCENDING"},{"fieldPath":"ts","order":"DESCENDING"}]},
+  {"collectionGroup":"registro_diario","queryScope":"COLLECTION","fields":[{"fieldPath":"fecha","order":"ASCENDING"},{"fieldPath":"ts","order":"DESCENDING"}]},
+  {"collectionGroup":"movimientos","queryScope":"COLLECTION","fields":[{"fieldPath":"fecha","order":"ASCENDING"},{"fieldPath":"ts","order":"DESCENDING"}]}
+],"fieldOverrides":[]}

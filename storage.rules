@@ -1,0 +1,30 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function auth()    { return request.auth != null; }
+    function uid()     { return request.auth.uid; }
+    function maxMB(n)  { return request.resource.size < n * 1024 * 1024; }
+    function isImg()   { return request.resource.contentType.matches('image/.*'); }
+    function isVideo() { return request.resource.contentType.matches('video/.*'); }
+    function isMedia() { return isImg() || isVideo(); }
+
+    // Fotos de habitaciones: solo el dueño escribe, supervisor lee
+    match /habitaciones/{uid}/{fecha}/{file} {
+      allow read:   if auth() && (request.auth.uid==uid ||
+                    firestore.get(/databases/(default)/documents/usuarios/$(request.auth.uid)).data.rol in ['admin','supervisor']);
+      allow write:  if auth() && request.auth.uid==uid && isMedia() && maxMB(50);
+      allow delete: if auth() && request.auth.uid==uid;
+    }
+    // Fotos de incidencias
+    match /incidencias/{uid}/{fecha}/{file} {
+      allow read:   if auth() && (request.auth.uid==uid ||
+                    firestore.get(/databases/(default)/documents/usuarios/$(request.auth.uid)).data.rol in ['admin','supervisor']);
+      allow write:  if auth() && request.auth.uid==uid && isImg() && maxMB(10);
+      allow delete: if auth() && request.auth.uid==uid;
+    }
+    // Denegar todo lo demás
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

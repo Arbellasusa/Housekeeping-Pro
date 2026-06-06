@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HK Pro">
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- QR Code -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<title>HK Pro Enterprise — Hyde House Hotel</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --gold:#c9a84c;--gold-l:#f0d890;--gold-d:#8a6c28;
+  --navy:#0f172a;--navy-m:#1e293b;
+  --g:#059669;--gl:#d1fae5;--gp:#ecfdf5;
+  --y:#d97706;--yl:#fef3c7;--yp:#fffbeb;
+  --r:#dc2626;--rl:#fee2e2;--rp:#fff5f5;
+  --b:#2563eb;--bl:#dbeafe;
+  --p:#7c3aed;--pl:#ede9fe;
+  --n50:#f8fafc;--n100:#f1f5f9;--n200:#e2e8f0;
+  --n300:#cbd5e1;--n400:#94a3b8;--n500:#64748b;
+  --n600:#475569;--n700:#334155;--n800:#1e293b;--n900:#0f172a;
+  --bg:#f0f4f0;--surf:#fff;--border:#e2e8f0;
+  --rad:14px;--rs:10px;--f:'Inter',sans-serif;--m:'JetBrains Mono',monospace;
+  --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
+  --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shm:0 4px 6px rgba(0,0,0,.07);
+}
+html,body{font-family:var(--f);background:var(--bg);color:var(--n900);min-height:100vh;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+
+/* ── LOGIN ─────────────────────────────────── */
+#login{position:fixed;inset:0;z-index:9999;background:linear-gradient(160deg,#0f172a 0%,#1a2744 55%,#0f1f3d 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;color:#fff;overflow-y:auto}
+#login.oculto{display:none}
+.l-ico{width:80px;height:80px;border-radius:20px;background:linear-gradient(135deg,var(--gold),var(--gold-d));display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 14px;box-shadow:0 8px 28px rgba(201,168,76,.35)}
+.l-hotel{font-size:24px;font-weight:800;text-align:center;letter-spacing:-.4px;margin-bottom:4px}
+.l-addr{font-size:12px;opacity:.45;text-align:center;margin-bottom:24px}
+.l-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);border-radius:18px;padding:22px;width:100%;max-width:360px}
+.l-campo{margin-bottom:13px}
+.l-lbl{font-size:11px;font-weight:600;opacity:.55;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px}
+.l-inp{width:100%;height:48px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:var(--rs);padding:0 14px;font-size:15px;font-family:var(--f);color:#fff;outline:none;transition:border-color .2s}
+.l-inp::placeholder{opacity:.4}.l-inp:focus{border-color:var(--gold)}
+.l-btn{width:100%;height:52px;background:linear-gradient(135deg,var(--gold),var(--gold-d));color:var(--navy);border:none;border-radius:var(--rs);font-size:16px;font-weight:800;font-family:var(--f);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;box-shadow:0 4px 16px rgba(201,168,76,.35);transition:opacity .15s}
+.l-btn:active{opacity:.85}.l-btn:disabled{opacity:.5;cursor:not-allowed}
+.l-err{font-size:12px;color:#fca5a5;text-align:center;margin-top:10px;min-height:18px;line-height:1.5}
+.l-divider{display:flex;align-items:center;gap:10px;margin:14px 0;opacity:.3}
+.l-divider::before,.l-divider::after{content:'';flex:1;height:1px;background:#fff}
+.l-divider span{font-size:11px}
+.l-google{width:100%;height:44px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:var(--rs);color:#fff;font-size:14px;font-weight:600;font-family:var(--f);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px}
+.l-nota{margin-top:16px;font-size:11px;opacity:.3;text-align:center;max-width:300px;line-height:1.5}
+
+/* ── APP ───────────────────────────────────── */
+#app{display:none;flex-direction:column;min-height:100vh;min-height:-webkit-fill-available;max-width:480px;margin:0 auto}
+#app.activo{display:flex}
+
+/* ── TOPBAR ────────────────────────────────── */
+.topbar{background:var(--navy);color:#fff;padding:calc(var(--sat)+11px) 15px 11px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:200}
+.tb-logo{width:32px;height:32px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,var(--gold),var(--gold-d));display:flex;align-items:center;justify-content:center;font-size:15px}
+.tb-inf{flex:1;min-width:0}.tb-h{font-size:14px;font-weight:700;letter-spacing:-.3px}
+.tb-s{font-size:10px;opacity:.5;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-der{display:flex;align-items:center;gap:8px}
+.cpill{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border-radius:20px;padding:4px 9px;font-size:11px;font-weight:600;cursor:pointer}
+.cdot{width:7px;height:7px;border-radius:50%;background:#f87171;flex-shrink:0}
+.cdot.ok{background:#4ade80;animation:pls 2s infinite}
+@keyframes pls{0%,100%{opacity:1}50%{opacity:.3}}
+.clk{font-family:var(--m);font-size:11px;background:rgba(255,255,255,.1);border-radius:7px;padding:4px 8px}
+
+/* ── ROLE STRIP ────────────────────────────── */
+.rstrip{padding:7px 15px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--border)}
+.rstrip.housekeeper{background:#fef3c7;color:#92400e}
+.rstrip.almacenero{background:#dbeafe;color:#1e3a8a}
+.rstrip.supervisor{background:#ede9fe;color:#4c1d95}
+.rstrip.gerente,.rstrip.admin{background:linear-gradient(90deg,var(--navy),var(--navy-m));color:var(--gold)}
+.rdot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* ── LAYOUT ────────────────────────────────── */
+.contenido{flex:1;padding:13px 12px;overflow-x:hidden}
+.bnav{background:var(--surf);border-top:1px solid var(--border);display:flex;padding:6px 0 calc(var(--sab)+6px);position:sticky;bottom:0;z-index:200}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 2px;border:none;background:none;cursor:pointer;color:var(--n400);font-family:var(--f);position:relative;transition:color .15s}
+.nb.activo{color:var(--gold)}.nb svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.nb span{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.2px}
+.punto{position:absolute;top:3px;right:calc(50% - 13px);width:8px;height:8px;border-radius:50%;background:var(--r);border:2px solid var(--surf);display:none}.punto.show{display:block}
+
+/* ── PANELS ────────────────────────────────── */
+.panel{display:none;animation:subir .18s ease}.panel.activo{display:block}
+@keyframes subir{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── STATS GRID ────────────────────────────── */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:13px}
+.sc{background:var(--surf);border-radius:var(--rad);padding:12px;box-shadow:var(--sh);border:1px solid var(--border);position:relative;overflow:hidden}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.sc.gold::before{background:linear-gradient(90deg,var(--gold),var(--gold-l))}.sc.green::before{background:var(--g)}.sc.red::before{background:var(--r)}.sc.blue::before{background:var(--b)}.sc.amber::before{background:var(--y)}.sc.purple::before{background:var(--p)}
+.kn{font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1;font-family:var(--m)}.kl{font-size:11px;color:var(--n500);margin-top:3px;font-weight:500}
+.sc.gold .kn{color:var(--gold)}.sc.green .kn{color:var(--g)}.sc.red .kn{color:var(--r)}.sc.blue .kn{color:var(--b)}.sc.amber .kn{color:var(--y)}.sc.purple .kn{color:var(--p)}
+
+/* ── CARDS ─────────────────────────────────── */
+.card{background:var(--surf);border-radius:var(--rad);box-shadow:var(--sh);padding:14px;margin-bottom:10px;border:1px solid var(--border)}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.ct{font-size:12px;font-weight:700;color:var(--n600);text-transform:uppercase;letter-spacing:.5px}
+.ca{font-size:12px;color:var(--gold);font-weight:600;cursor:pointer;background:none;border:none;font-family:var(--f)}
+
+/* ── FORM ──────────────────────────────────── */
+.fg{margin-bottom:10px}.fl{font-size:12px;font-weight:600;color:var(--n500);margin-bottom:5px;display:block}
+.fi,.fs{width:100%;height:42px;border:1.5px solid var(--border);border-radius:var(--rs);padding:0 11px;font-size:14px;font-family:var(--f);color:var(--n900);background:var(--surf);outline:none;appearance:none;-webkit-appearance:none;transition:border-color .15s,box-shadow .15s}
+.fi:focus,.fs:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.12)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+.fi-area{width:100%;min-height:70px;border:1.5px solid var(--border);border-radius:var(--rs);padding:9px 11px;font-size:14px;font-family:var(--f);color:var(--n900);background:var(--surf);outline:none;resize:none;line-height:1.4;transition:border-color .15s}
+.fi-area:focus{border-color:var(--gold)}
+
+/* ── BUTTONS ───────────────────────────────── */
+.bigbtn{width:100%;height:50px;background:linear-gradient(135deg,var(--gold),var(--gold-d));color:var(--navy);border:none;border-radius:var(--rs);font-size:15px;font-weight:800;font-family:var(--f);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(201,168,76,.3);transition:all .15s}
+.bigbtn:active{transform:scale(.98)}.bigbtn.rojo{background:linear-gradient(135deg,var(--r),#991b1b);color:#fff;box-shadow:0 4px 12px rgba(220,38,38,.3)}
+.bigbtn.wa{background:#25D366;color:#fff}.bigbtn.navy{background:var(--navy);color:var(--gold)}
+.bigbtn.naranja{background:linear-gradient(135deg,#ea580c,#c2410c);color:#fff}
+.btn{height:32px;padding:0 11px;border-radius:var(--rs);font-size:12px;font-weight:600;font-family:var(--f);cursor:pointer;border:none;display:inline-flex;align-items:center;gap:5px;transition:all .12s;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn.g{background:var(--gl);color:#065f46}.btn.r{background:var(--rl);color:var(--r)}.btn.b{background:var(--bl);color:var(--b)}
+.btn.y{background:var(--yl);color:var(--y)}.btn.p{background:var(--pl);color:var(--p)}.btn.n{background:var(--n100);color:var(--n600)}
+.btn.gold{background:rgba(201,168,76,.15);color:var(--gold-d)}.btn.wa{background:#dcfce7;color:#15803d}
+.btn.lleno{width:100%;justify-content:center;height:42px;font-size:13px}
+
+/* ── BADGES ────────────────────────────────── */
+.bdg{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.bdg.pend{background:var(--yl);color:var(--y)}.bdg.apro{background:var(--bl);color:var(--b)}.bdg.prep{background:var(--pl);color:var(--p)}.bdg.entr{background:var(--gl);color:var(--g)}.bdg.cerr{background:var(--n100);color:var(--n500)}
+.bdg.ok{background:var(--gl);color:var(--g)}.bdg.bajo{background:var(--yl);color:var(--y)}.bdg.agot{background:var(--rl);color:var(--r)}
+.bdg.urg{background:var(--rl);color:var(--r);animation:pls 1.5s infinite}.bdg.entrada{background:#fef3c7;color:#b45309}
+.bdg.vivo{background:#fef9c3;color:#713f12;animation:pls 1.5s infinite}
+.prioridad-max{background:linear-gradient(90deg,var(--r),#991b1b);color:#fff;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.5px}
+
+/* ── SOLICITUD CARD ────────────────────────── */
+.rc{background:var(--surf);border-radius:var(--rad);border:1px solid var(--border);padding:12px;margin-bottom:8px;box-shadow:var(--sh);animation:volar .3s ease}
+@keyframes volar{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.rc.urg{border-left:3px solid var(--r)}.rc.entrada-urgente{border:2px solid var(--r);background:var(--rp)}
+.rc-hdr{display:flex;align-items:flex-start;gap:9px;margin-bottom:7px}
+.rc-emo{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.rc-info{flex:1;min-width:0}.rc-tit{font-size:13px;font-weight:700;line-height:1.3}.rc-meta{font-size:11px;color:var(--n500);margin-top:2px}
+.rc-hora{font-family:var(--m);font-size:10px;color:var(--n400);margin-top:2px}
+.rc-acts{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+
+/* ── HAB LISTA CARD ────────────────────────── */
+.hl-card{background:var(--surf);border-radius:var(--rad);border:1px solid var(--border);padding:13px;margin-bottom:9px;box-shadow:var(--sh)}
+.hl-card.lista{border-left:3px solid var(--g)}.hl-card.pendiente{border-left:3px solid var(--y)}
+.hl-fotos{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.hl-foto-thumb{width:70px;height:70px;border-radius:8px;object-fit:cover;cursor:pointer;border:2px solid var(--border)}
+.hl-foto-thumb:hover{border-color:var(--gold)}
+.foto-upload-btn{width:70px;height:70px;border-radius:8px;border:2px dashed var(--border);background:var(--n50);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:var(--n400);transition:all .15s}
+.foto-upload-btn:hover{border-color:var(--gold);background:rgba(201,168,76,.05);color:var(--gold)}
+
+/* ── INCIDENCIA CARD ───────────────────────── */
+.inc-card{background:var(--surf);border-radius:var(--rad);border:1.5px solid #fca5a5;padding:13px;margin-bottom:9px;box-shadow:var(--sh);position:relative}
+.inc-badge{position:absolute;top:12px;right:12px}
+.inc-foto{width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-top:9px}
+
+/* ── BUSCAR PRODUCTO AUTOCOMPLETE ──────────── */
+.autocomplete-wrap{position:relative}
+.autocomplete-list{position:absolute;top:100%;left:0;right:0;background:var(--surf);border:1.5px solid var(--gold);border-top:none;border-radius:0 0 var(--rs) var(--rs);max-height:200px;overflow-y:auto;z-index:500;box-shadow:var(--shm);display:none}
+.autocomplete-list.show{display:block}
+.ac-item{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--n100);font-size:13px;transition:background .12s}
+.ac-item:hover{background:var(--n50)}.ac-item:last-child{border-bottom:none}
+.ac-name{font-weight:600;color:var(--n900)}.ac-meta{font-size:11px;color:var(--n500);margin-top:2px}
+.ac-badge{font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:6px}
+
+/* ── INVENTARIO ────────────────────────────── */
+.inv-sec{margin-bottom:10px}
+.inv-hdr{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--navy);border-radius:var(--rad) var(--rad) 0 0;color:#fff;cursor:pointer}
+.inv-hdr-tit{font-size:13px;font-weight:700;flex:1}
+.inv-hdr-bdg{background:rgba(255,255,255,.15);border-radius:20px;font-size:11px;font-weight:700;padding:3px 9px}
+.inv-body{background:var(--surf);border-radius:0 0 var(--rad) var(--rad);border:1px solid var(--border);border-top:none;max-height:0;overflow:hidden;transition:max-height .35s ease}
+.inv-body.abierto{max-height:9999px}
+.inv-row{display:flex;align-items:center;gap:10px;padding:11px 13px;border-bottom:1px solid var(--n100)}
+.inv-row:last-child{border-bottom:none}
+.inv-izq{flex:1;min-width:0}.inv-nombre{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.inv-sku{font-size:10px;color:var(--n400);font-family:var(--m);margin-top:2px}
+.inv-meta{font-size:11px;color:var(--n500);margin-top:3px;line-height:1.4}
+.inv-der{text-align:right;flex-shrink:0}
+.inv-cant{font-size:22px;font-weight:800;font-family:var(--m);letter-spacing:-.5px}.inv-ud{font-size:10px;color:var(--n400)}
+.barra{height:4px;border-radius:2px;background:var(--n200);overflow:hidden;width:54px;margin:3px 0 0 auto}
+.barra-fill{height:100%;border-radius:2px;transition:width .4s}
+
+/* ── KARDEX ────────────────────────────────── */
+.ktbl{width:100%;border-collapse:collapse;font-size:12px}
+.ktbl th{font-size:10px;font-weight:700;color:var(--n500);text-align:left;padding:7px 9px;background:var(--n100);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.4px;position:sticky;top:0}
+.ktbl td{padding:8px 9px;border-bottom:1px solid var(--n100);color:var(--n900);vertical-align:middle}
+.ktbl tr:hover td{background:var(--n50)}.ktbl tr:last-child td{border-bottom:none}
+
+/* ── CHAT ──────────────────────────────────── */
+.chatw{background:#ECE5DD;border-radius:var(--rad);overflow:hidden;margin-bottom:10px}
+.chat-hdr{background:#075E54;padding:11px 13px;display:flex;align-items:center;gap:9px}
+.chat-av{width:36px;height:36px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.chat-tit{font-size:13px;font-weight:700;color:#fff}.chat-sub{font-size:10px;color:rgba(255,255,255,.6);margin-top:1px}
+.chat-msgs{padding:9px;min-height:180px;max-height:320px;overflow-y:auto}
+.burbuja{max-width:87%;padding:7px 11px;margin-bottom:5px;font-size:13px;line-height:1.45;border-radius:12px 12px 12px 3px;background:#fff;color:#111;box-shadow:0 1px 2px rgba(0,0,0,.07)}
+.burbuja.saliente{background:#DCF8C6;border-radius:12px 12px 3px 12px;margin-left:auto}
+.burbuja.sistema{background:rgba(0,0,0,.07);border-radius:8px;margin:4px auto;text-align:center;font-size:11px;color:#555;max-width:78%}
+.burbuja-quien{font-size:10px;font-weight:700;color:#1D9E75;margin-bottom:2px}
+.burbuja-hora{font-size:9px;color:#888;text-align:right;margin-top:2px}
+.chat-inp-row{background:#f0f0f0;padding:7px 9px;display:flex;gap:7px;align-items:center}
+.chat-inp{flex:1;height:36px;border-radius:18px;border:none;padding:0 13px;font-size:13px;font-family:var(--f);background:#fff;outline:none;color:#111}
+.chat-send{width:36px;height:36px;border-radius:50%;background:#25D366;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* ── TABS ──────────────────────────────────── */
+.chtabs,.stabs{display:flex;gap:5px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
+.chtab,.stab{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--border);cursor:pointer;background:none;color:var(--n500);white-space:nowrap;transition:all .15s}
+.chtab.activo,.stab.activo{background:var(--navy);color:var(--gold);border-color:var(--navy)}
+
+/* ── MODAL ─────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.overlay.oculto{display:none}
+.modal{background:var(--surf);border-radius:18px 18px 0 0;padding:20px 20px calc(var(--sab)+24px);width:100%;max-width:480px;max-height:93vh;overflow-y:auto}
+.modal-handle{width:40px;height:4px;border-radius:2px;background:var(--n300);margin:0 auto 16px}
+.modal-tit{font-size:18px;font-weight:800;margin-bottom:5px}
+.modal-sub{font-size:13px;color:var(--n500);margin-bottom:16px;line-height:1.5}
+
+/* ── SETTINGS ROWS ─────────────────────────── */
+.set-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--n100)}
+.set-row:last-child{border-bottom:none}
+.set-ico{width:38px;height:38px;border-radius:10px;background:var(--n100);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.set-bod{flex:1;min-width:0}.set-nom{font-size:13px;font-weight:600}.set-sub{font-size:11px;color:var(--n500);margin-top:2px;word-break:break-all;line-height:1.4}
+.togw{position:relative;width:46px;height:26px;flex-shrink:0;cursor:pointer}
+.togi{opacity:0;width:0;height:0;position:absolute}
+.togt{position:absolute;inset:0;background:var(--n200);border-radius:13px;transition:.3s}
+.togi:checked ~ .togt{background:var(--gold)}
+.togb{position:absolute;left:3px;top:3px;width:20px;height:20px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:.3s}
+.togi:checked ~ .togb{left:23px}
+
+/* ── MISC ──────────────────────────────────── */
+.divider{height:1px;background:var(--border);margin:11px 0}
+.expre{background:var(--n50);border:1px solid var(--border);border-radius:var(--rs);padding:11px;font-family:var(--m);font-size:11px;color:var(--n900);white-space:pre-wrap;max-height:280px;overflow-y:auto;line-height:1.7;margin-bottom:9px}
+.vacio{text-align:center;padding:28px 14px;color:var(--n400)}
+.vacio-ico{font-size:36px;margin-bottom:9px}.vacio-tit{font-size:14px;font-weight:600;color:var(--n500);margin-bottom:5px}.vacio-sub{font-size:12px;line-height:1.5}
+.info{padding:11px;border-radius:var(--rs);font-size:11px;line-height:1.65;margin-top:9px;border:1px solid}
+.info.amber{background:var(--yp);color:var(--y);border-color:var(--yl)}
+.info.green{background:var(--gp);color:#065f46;border-color:var(--gl)}
+.info.red{background:var(--rp);color:var(--r);border-color:var(--rl)}
+.info.blue{background:#eff6ff;color:var(--b);border-color:var(--bl)}
+.toast{position:fixed;bottom:calc(var(--sab)+80px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--n900);color:#fff;padding:10px 18px;border-radius:22px;font-size:13px;font-weight:600;opacity:0;transition:all .22s;pointer-events:none;z-index:99999;max-width:90vw;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.pring{display:inline-block;width:9px;height:9px;border-radius:50%;background:#4ade80;position:relative}
+.pring::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2px solid #4ade80;animation:pra 1.5s infinite}
+@keyframes pra{0%{transform:scale(1);opacity:.7}100%{transform:scale(2);opacity:0}}
+.qr-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+.foto-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.foto-item{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--n100)}
+.foto-item img,.foto-item video{width:100%;height:100%;object-fit:cover}
+.foto-del{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(220,38,38,.85);border:none;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.prioridad-banner{background:linear-gradient(90deg,var(--r),#b91c1c);color:#fff;padding:8px 14px;border-radius:var(--rad);margin-bottom:10px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══════════════════════════════════════ -->
+<div id="login">
+  <div class="l-ico">🏨</div>
+  <div class="l-hotel">Hyde House Hotel</div>
+  <div class="l-addr">4111 South Ocean Drive · Hollywood, Florida</div>
+  <div class="l-card">
+    <div class="l-campo">
+      <label class="l-lbl">Correo electrónico</label>
+      <input class="l-inp" id="l-email" type="email" placeholder="tu@hyde.com" autocomplete="email">
+    </div>
+    <div class="l-campo">
+      <label class="l-lbl">Contraseña</label>
+      <input class="l-inp" id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="l-btn" id="l-btn" onclick="hacerLogin()">
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      Entrar al sistema
+    </button>
+    <div class="l-divider"><span>o</span></div>
+    <button class="l-google" onclick="loginGoogle()">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0112 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.27 0 3.198 2.698 1.24 6.65l4.026 3.115z"/><path fill="#34A853" d="M16.04 18.013A7.1 7.1 0 0112 19.09c-3.133 0-5.771-2.013-6.723-4.822L1.237 17.335C3.193 21.297 7.265 24 12 24c2.933 0 5.735-.957 7.834-2.999l-3.794-2.988z"/><path fill="#4A90E2" d="M19.834 21.001C22.03 18.952 23.455 15.904 23.455 12c0-.708-.091-1.472-.273-2.182H12v4.636h6.436c-.317 1.558-1.167 2.766-2.395 3.559l3.793 2.988z"/><path fill="#FBBC05" d="M5.277 14.268A7.12 7.12 0 014.91 12c0-.85.16-1.667.406-2.235L1.24 6.65A11.934 11.934 0 000 12c0 1.92.444 3.73 1.237 5.335l4.04-3.067z"/></svg>
+      Continuar con Google
+    </button>
+    <div class="l-err" id="l-err"></div>
+  </div>
+  <div class="l-nota">Sistema seguro · Acceso solo empleados autorizados<br>Hyde House Hotel — Hollywood, Florida</div>
+</div>
+
+<!-- ══ MODALES ══════════════════════════════════════ -->
+
+<!-- Modal: Nueva solicitud -->
+<div class="overlay oculto" id="modal-sol">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-tit">📋 Nueva solicitud</div>
+    <div class="fg">
+      <label class="fl">Habitación</label>
+      <select class="fs" id="sol-hab"><option value="">Seleccionar habitación...</option></select>
+    </div>
+    <div class="fg">
+      <label class="fl">Prioridad</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px">
+        <button class="btn g lleno" id="pt-normal" onclick="setPri('normal')" style="height:38px">✓ Normal</button>
+        <button class="btn y lleno" id="pt-alta" onclick="setPri('alta')" style="height:38px">⚡ Alta</button>
+        <button class="btn r lleno" id="pt-urgente" onclick="setPri('urgente')" style="height:38px">🚨 Urgente</button>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Buscar material / producto</label>
+      <div class="autocomplete-wrap">
+        <input class="fi" id="sol-buscar-prod" placeholder="Escribe para buscar..." oninput="buscarProducto(this.value)" autocomplete="off">
+        <div class="autocomplete-list" id="sol-autocomplete"></div>
+      </div>
+      <div id="sol-prod-elegido" style="margin-top:7px;display:none">
+        <div style="background:var(--gp);border:1px solid var(--gl);border-radius:var(--rs);padding:9px 12px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--n900)" id="sol-prod-nombre">—</div>
+            <div style="font-size:11px;color:var(--n500)" id="sol-prod-meta">—</div>
+          </div>
+          <button class="btn r" style="height:26px;font-size:11px" onclick="limpiarProdSel()">✗</button>
+        </div>
+      </div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Cantidad</label><input class="fi" type="number" id="sol-qty" value="1" min="1"></div>
+      <div class="fg"><label class="fl">Nota opcional</label><input class="fi" id="sol-nota" placeholder="Observaciones..."></div>
+    </div>
+    <button class="bigbtn" id="btn-enviar-sol" onclick="enviarSolicitud()">
+      <svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9"/></svg>
+      Enviar solicitud
+    </button>
+  </div>
+</div>
+
+<!-- Modal: Habitación lista -->
+<div class="overlay oculto" id="modal-hab-lista">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-tit">✅ Registrar habitación lista</div>
+    <div class="fg">
+      <label class="fl">Número de habitación</label>
+      <select class="fs" id="hl-hab"><option value="">Seleccionar habitación...</option></select>
+    </div>
+    <div class="fg">
+      <label class="fl">Estado</label>
+      <select class="fs" id="hl-estado">
+        <option value="lista">✅ Lista / Clean</option>
+        <option value="revision">🔍 En revisión</option>
+        <option value="mantenimiento">🔧 Necesita mantenimiento</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Observaciones</label>
+      <textarea class="fi-area" id="hl-obs" placeholder="Notas opcionales..."></textarea>
+    </div>
+    <div class="fg">
+      <label class="fl">📸 Fotos de la habitación (máx. 5)</label>
+      <div id="hl-fotos-preview" class="foto-grid"></div>
+      <label style="margin-top:8px;display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--b);font-weight:600">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        Añadir foto
+        <input type="file" id="hl-foto-input" accept="image/*" multiple style="display:none" onchange="previsualizarFotos(this,'hl')">
+      </label>
+    </div>
+    <div class="fg">
+      <label class="fl">🎬 Video de la habitación (máx. 1)</label>
+      <div id="hl-video-preview"></div>
+      <label style="margin-top:8px;display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--p);font-weight:600">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M15 10l4.553-2.069A1 1 0 0121 8.847v6.306a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+        Añadir video
+        <input type="file" id="hl-video-input" accept="video/*" style="display:none" onchange="previsualizarVideo(this)">
+      </label>
+    </div>
+    <button class="bigbtn" onclick="guardarHabLista()">💾 Guardar habitación lista</button>
+  </div>
+</div>
+
+<!-- Modal: Reportar incidencia -->
+<div class="overlay oculto" id="modal-incidencia">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-tit" style="color:var(--r)">🚨 Reportar incidencia</div>
+    <div class="modal-sub">Se notificará automáticamente al supervisor vía WhatsApp</div>
+    <div class="fg">
+      <label class="fl">Habitación</label>
+      <select class="fs" id="inc-hab"><option value="">Seleccionar habitación...</option></select>
+    </div>
+    <div class="fg">
+      <label class="fl">Tipo de incidencia</label>
+      <select class="fs" id="inc-tipo">
+        <option value="roto">🔧 Objeto roto / Broken item</option>
+        <option value="danado">⚠️ Daño en habitación</option>
+        <option value="sucio">🧹 Suciedad especial</option>
+        <option value="falta">📦 Falta equipamiento</option>
+        <option value="seguridad">🔒 Problema de seguridad</option>
+        <option value="otro">📝 Otro</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Descripción</label>
+      <textarea class="fi-area" id="inc-desc" placeholder="Describe el problema con detalle..." rows="3"></textarea>
+    </div>
+    <div class="fg">
+      <label class="fl">📸 Foto de la incidencia (recomendada)</label>
+      <div id="inc-foto-preview"></div>
+      <label style="margin-top:8px;display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--r);font-weight:600">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Tomar o subir foto
+        <input type="file" id="inc-foto-input" accept="image/*" capture="environment" style="display:none" onchange="previsualizarIncFoto(this)">
+      </label>
+    </div>
+    <button class="bigbtn rojo" onclick="guardarIncidencia()">
+      <svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9"/></svg>
+      Enviar incidencia al supervisor
+    </button>
+  </div>
+</div>
+
+<!-- Modal: Nuevo producto (solo almacenero+) -->
+<div class="overlay oculto" id="modal-prod">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-tit">📦 Nuevo producto en inventario</div>
+    <div class="fr">
+      <div class="fg"><label class="fl">SKU</label><input class="fi" id="pm-sku" placeholder="PROD-001"></div>
+      <div class="fg"><label class="fl">Categoría</label>
+        <select class="fs" id="pm-cat">
+          <option value="linen">🛏 Linen</option><option value="refill">🧴 Refill</option>
+          <option value="supply">🧻 Supplies</option><option value="clean">🧼 Limpieza</option><option value="otro">📦 Otros</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Nombre (ES / EN)</label><input class="fi" id="pm-nombre" placeholder="Toalla grande / Large towel"></div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Unidad</label><input class="fi" id="pm-ud" placeholder="ud, rollos, litros"></div>
+      <div class="fg"><label class="fl">Proveedor</label><input class="fi" id="pm-prov" placeholder="Nombre"></div>
+    </div>
+    <div class="fr3">
+      <div class="fg"><label class="fl">Exist. inicial</label><input class="fi" id="pm-init" type="number" value="0" min="0"></div>
+      <div class="fg"><label class="fl">Mínimo alerta</label><input class="fi" id="pm-min" type="number" value="5" min="0"></div>
+      <div class="fg"><label class="fl">Precio $</label><input class="fi" id="pm-precio" type="number" value="0" step="0.01"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn n lleno" onclick="cerrarModal('modal-prod')">Cancelar</button>
+      <button class="btn g lleno" onclick="guardarProducto()">✓ Añadir al inventario</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Ajuste stock -->
+<div class="overlay oculto" id="modal-adj">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-tit" id="adj-tit">Ajuste de stock</div>
+    <input type="hidden" id="adj-id">
+    <div style="background:var(--n100);border-radius:var(--rs);padding:12px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:600" id="adj-pnombre">—</div>
+      <div style="font-size:11px;color:var(--n500);margin-top:3px">Existencia actual: <strong id="adj-actual">—</strong></div>
+    </div>
+    <div class="fg"><label class="fl">Nueva existencia final</label><input class="fi" type="number" id="adj-qty" min="0"></div>
+    <div class="fg"><label class="fl">Motivo</label>
+      <select class="fs" id="adj-motivo">
+        <option value="correccion">Corrección de inventario</option>
+        <option value="dano">Daño / Merma</option>
+        <option value="perdida">Pérdida</option>
+        <option value="reconteo">Reconteo físico</option>
+        <option value="otro">Otro</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">Nota</label><input class="fi" id="adj-nota" placeholder="Opcional..."></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn n lleno" onclick="cerrarModal('modal-adj')">Cancelar</button>
+      <button class="btn gold lleno" onclick="guardarAjuste()">✓ Aplicar ajuste</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal WA -->
+<div class="overlay oculto" id="modal-wa">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-tit">📱 Contactos WhatsApp</div>
+    <div class="modal-sub">Solo Administrador puede modificar. Los números van en Firebase Functions (no en la app).</div>
+    <div class="fg"><label class="fl">📦 Almacenero</label><input class="fi" id="wa-alm" type="tel" placeholder="+18095551234"></div>
+    <div class="fg"><label class="fl">👔 Supervisor</label><input class="fi" id="wa-sup" type="tel" placeholder="+18095551234"></div>
+    <div class="fg"><label class="fl">🏨 Admin / Gerente</label><input class="fi" id="wa-adm" type="tel" placeholder="+18095551234"></div>
+    <div class="fg"><label class="fl">💬 Grupo (número o link)</label>
+      <textarea class="fi-area" id="wa-grp" rows="2" placeholder="+18095551234 ó https://chat.whatsapp.com/..."></textarea>
+    </div>
+    <div class="info amber">⚠️ Para activar WhatsApp Business API: configura el token en Firebase Functions (nunca en la app).</div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn n lleno" onclick="cerrarModal('modal-wa')">Cancelar</button>
+      <button class="btn g lleno" onclick="guardarWA()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ══════════════════════════════════════════ -->
+<div id="app">
+  <div class="topbar">
+    <div class="tb-logo">🏨</div>
+    <div class="tb-inf">
+      <div class="tb-h">Hyde House Hotel</div>
+      <div class="tb-s" id="tb-usuario">---</div>
+    </div>
+    <div class="tb-der">
+      <div class="cpill" id="cpill">
+        <div class="cdot" id="cdot"></div>
+        <span id="clbl">Conectando...</span>
+      </div>
+      <div class="clk" id="clk">--:--</div>
+    </div>
+  </div>
+  <div class="rstrip housekeeper" id="rstrip">
+    <div class="rdot"></div><span id="rtxt">Cargando...</span>
+  </div>
+
+  <div class="contenido">
+
+    <!-- ── PANEL HOUSEKEEPING (rol: housekeeper) ────── -->
+    <div class="panel activo" id="p-hk">
+      <!-- Botón incidencia siempre visible -->
+      <button class="bigbtn rojo" style="margin-bottom:12px" onclick="abrirModal('modal-incidencia')">
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        Reportar incidencia
+      </button>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <button class="bigbtn navy" style="height:58px" onclick="abrirModal('modal-hab-lista')">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Hab. lista
+        </button>
+        <button class="bigbtn" style="height:58px" onclick="abrirModal('modal-sol')">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg>
+          Solicitar
+        </button>
+      </div>
+
+      <!-- Habitaciones listas hoy (propias) -->
+      <div class="card">
+        <div class="ch">
+          <span class="ct">Mis habitaciones hoy</span>
+          <span class="bdg vivo" id="hk-hoy-cnt">0 listas</span>
+        </div>
+        <div id="hk-habs-lista"></div>
+      </div>
+
+      <!-- Mis solicitudes -->
+      <div class="card">
+        <div class="ch"><span class="ct">Mis solicitudes</span></div>
+        <div id="hk-mis-solic"></div>
+      </div>
+    </div>
+
+    <!-- ── PANEL SOLICITUDES (almacenero/supervisor/admin) ── -->
+    <div class="panel" id="p-sol">
+      <!-- Stats solo para roles con permiso -->
+      <div class="sg" id="stats-grid">
+        <div class="sc gold"><div class="kn" id="kpi-hoy">0</div><div class="kl">Hoy</div></div>
+        <div class="sc amber"><div class="kn" id="kpi-pend">0</div><div class="kl">Pendientes</div></div>
+        <div class="sc red"><div class="kn" id="kpi-urg">0</div><div class="kl">Urgentes</div></div>
+        <div class="sc green"><div class="kn" id="kpi-entr">0</div><div class="kl">Entregadas</div></div>
+        <div class="sc blue"><div class="kn" id="kpi-bajo">0</div><div class="kl">Stock bajo</div></div>
+        <div class="sc purple"><div class="kn" id="kpi-agot">0</div><div class="kl">Agotados</div></div>
+      </div>
+      <!-- Banner prioridades -->
+      <div id="priority-banner"></div>
+      <!-- Feed en tiempo real -->
+      <div style="margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:8px;padding:11px 14px;background:var(--navy);border-radius:var(--rad) var(--rad) 0 0;color:#fff">
+          <div class="pring"></div>
+          <div style="font-size:14px;font-weight:700;flex:1">Solicitudes en tiempo real</div>
+          <div style="background:rgba(255,255,255,.15);border-radius:20px;font-size:11px;font-weight:700;padding:3px 9px" id="feed-cnt">0</div>
+        </div>
+        <div style="background:var(--n50);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--rad) var(--rad);max-height:500px;overflow-y:auto" id="feed-solic">
+          <div class="vacio"><div class="vacio-ico">📡</div><div class="vacio-sub">Esperando solicitudes...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PANEL ALMACÉN ────────────────────────────── -->
+    <div class="panel" id="p-alm">
+      <div class="stabs">
+        <button class="stab activo" onclick="swAlm('inv')" id="st-inv">📦 Inventario</button>
+        <button class="stab" onclick="swAlm('kar')" id="st-kar">📊 Kardex</button>
+        <button class="stab" onclick="swAlm('ent')" id="st-ent">📥 Entradas</button>
+        <button class="stab" onclick="swAlm('exp')" id="st-exp">📋 Exportar</button>
+      </div>
+      <!-- Inventario -->
+      <div id="sp-inv">
+        <div style="display:flex;gap:7px;margin-bottom:10px">
+          <input class="fi" id="inv-buscar" placeholder="Buscar producto..." oninput="renderInventario()" style="flex:1">
+          <button class="btn gold" id="btn-add-prod" onclick="abrirModal('modal-prod')">+ Añadir</button>
+        </div>
+        <div id="lista-inv"></div>
+      </div>
+      <!-- Kardex -->
+      <div id="sp-kar" style="display:none">
+        <div class="fr" style="margin-bottom:10px">
+          <div class="fg"><label class="fl">Producto</label><select class="fs" id="kar-prod" onchange="renderKardex()"><option value="">Todos</option></select></div>
+          <div class="fg"><label class="fl">Tipo</label>
+            <select class="fs" id="kar-tipo" onchange="renderKardex()">
+              <option value="">Todos</option><option value="entrada">Entradas</option><option value="salida">Salidas</option><option value="ajuste">Ajustes</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="ktbl"><thead><tr><th>Fecha</th><th>Hora</th><th>Producto</th><th>Tipo</th><th>Cant.</th><th>Antes</th><th>Después</th><th>Usuario</th><th>Ref.</th></tr></thead>
+          <tbody id="kar-body"></tbody></table>
+        </div>
+      </div>
+      <!-- Entradas stock -->
+      <div id="sp-ent" style="display:none">
+        <div class="card">
+          <div class="ct" style="margin-bottom:12px">Registrar entrada de stock</div>
+          <div class="fg"><label class="fl">Producto</label><select class="fs" id="ent-prod"><option value="">Seleccionar...</option></select></div>
+          <div class="fr3">
+            <div class="fg"><label class="fl">Cantidad</label><input class="fi" type="number" id="ent-qty" min="1" placeholder="0"></div>
+            <div class="fg"><label class="fl">Precio $</label><input class="fi" type="number" id="ent-precio" step="0.01" placeholder="0.00"></div>
+            <div class="fg"><label class="fl">Tipo</label><select class="fs" id="ent-tipo"><option value="entrada">Compra</option><option value="traslado">Traslado</option><option value="ajuste">Ajuste</option></select></div>
+          </div>
+          <div class="fg"><label class="fl">Proveedor / Factura</label><input class="fi" id="ent-ref" placeholder="Nombre o nº factura"></div>
+          <button class="bigbtn" onclick="registrarEntrada()">Registrar entrada de stock</button>
+        </div>
+      </div>
+      <!-- Exportar -->
+      <div id="sp-exp" style="display:none">
+        <div class="card">
+          <div class="ct" style="margin-bottom:12px">Generar reporte</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px">
+            <button onclick="genReporte('diario')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 6px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--surf);cursor:pointer;font-family:var(--f)"><span style="font-size:22px">📊</span><span style="font-size:11px;font-weight:700">Diario</span></button>
+            <button onclick="genReporte('semanal')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 6px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--surf);cursor:pointer;font-family:var(--f)"><span style="font-size:22px">📈</span><span style="font-size:11px;font-weight:700">Semanal</span></button>
+            <button onclick="genReporte('mensual')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 6px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--surf);cursor:pointer;font-family:var(--f)"><span style="font-size:22px">📋</span><span style="font-size:11px;font-weight:700">Mensual</span></button>
+          </div>
+          <button class="btn wa lleno" style="margin-bottom:7px" onclick="enviarReporteWA()">📲 WA almacenero</button>
+          <button class="btn n lleno" onclick="exportarCSV()">📑 CSV / Excel</button>
+          <div id="rep-preview" style="display:none;margin-top:12px"><div class="expre" id="rep-txt" style="font-size:11px"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PANEL SUPERVISIÓN ────────────────────────── -->
+    <div class="panel" id="p-sup">
+      <div class="stabs">
+        <button class="stab activo" onclick="swSup('habs')" id="ss-habs">🛏 Habitaciones</button>
+        <button class="stab" onclick="swSup('inc')" id="ss-inc">🚨 Incidencias</button>
+        <button class="stab" onclick="swSup('reg')" id="ss-reg">📋 Registro diario</button>
+      </div>
+      <!-- Habitaciones listas (todas) -->
+      <div id="sup-habs">
+        <div class="fr" style="margin-bottom:10px">
+          <div class="fg"><label class="fl">Filtrar por fecha</label><input class="fi" type="date" id="sup-fecha" onchange="cargarHabsListas()"></div>
+          <div class="fg"><label class="fl">Camarera</label>
+            <select class="fs" id="sup-quien" onchange="cargarHabsListas()">
+              <option value="">Todas</option>
+            </select>
+          </div>
+        </div>
+        <div id="lista-habs-sup"></div>
+      </div>
+      <!-- Incidencias -->
+      <div id="sup-inc" style="display:none">
+        <div class="fr" style="margin-bottom:10px">
+          <div class="fg"><label class="fl">Estado</label>
+            <select class="fs" id="inc-estado-fil" onchange="cargarIncidencias()">
+              <option value="">Todas</option><option value="abierta">Abiertas</option><option value="resuelta">Resueltas</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="inc-fecha-fil" onchange="cargarIncidencias()"></div>
+        </div>
+        <div id="lista-inc"></div>
+      </div>
+      <!-- Registro diario -->
+      <div id="sup-reg" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="reg-fecha" onchange="cargarRegistroDiario()"></div>
+          <div class="fg"><label class="fl">Camarera</label>
+            <select class="fs" id="reg-quien" onchange="cargarRegistroDiario()"><option value="">Todas</option></select>
+          </div>
+        </div>
+        <div id="lista-registro"></div>
+      </div>
+    </div>
+
+    <!-- ── PANEL CHAT ───────────────────────────────── -->
+    <div class="panel" id="p-chat">
+      <div class="chtabs">
+        <button class="chtab activo" onclick="cambiarCanal('housekeeping')" id="ch-housekeeping">🧹 Housekeeping</button>
+        <button class="chtab" onclick="cambiarCanal('almacen')" id="ch-almacen">📦 Almacén</button>
+        <button class="chtab" onclick="cambiarCanal('supervisores')" id="ch-supervisores">👔 Supervisores</button>
+        <button class="chtab" onclick="cambiarCanal('mantenimiento')" id="ch-mantenimiento">🔧 Mantenimiento</button>
+      </div>
+      <div class="chatw">
+        <div class="chat-hdr">
+          <div class="chat-av">HK</div>
+          <div><div class="chat-tit" id="chat-titulo">🧹 Housekeeping</div><div class="chat-sub" id="chat-sub">Canal activo</div></div>
+        </div>
+        <div class="chat-msgs" id="chat-msgs"></div>
+        <div class="chat-inp-row">
+          <input class="chat-inp" id="chat-inp" placeholder="Escribe un mensaje...">
+          <button class="chat-send" onclick="enviarChat()"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:#fff;stroke:none"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PANEL CONFIG ─────────────────────────────── -->
+    <div class="panel" id="p-cfg">
+      <div class="stabs">
+        <button class="stab activo" onclick="swCfg('perfil')" id="sc-perfil">👤 Perfil</button>
+        <button class="stab" id="sc-wa-tab" onclick="swCfg('wa')">📱 WhatsApp</button>
+        <button class="stab" id="sc-hotel-tab" onclick="swCfg('hotel')">🏨 Hotel</button>
+        <button class="stab" id="sc-qr-tab" onclick="swCfg('qr')">📲 QR App</button>
+        <button class="stab" id="sc-admin-tab" onclick="swCfg('admin')" style="display:none">⚙️ Admin</button>
+      </div>
+      <!-- Perfil -->
+      <div id="cfg-perfil">
+        <div class="card">
+          <div id="perfil-info"></div>
+          <div class="divider"></div>
+          <button class="btn r lleno" onclick="cerrarSesion()">🚪 Cerrar sesión</button>
+        </div>
+      </div>
+      <!-- WhatsApp -->
+      <div id="cfg-wa" style="display:none">
+        <div class="card">
+          <div class="ch"><span class="ct">Contactos WhatsApp</span><button class="ca" id="btn-editar-wa" onclick="abrirWAModal()" style="display:none">✏️ Editar</button></div>
+          <div id="lista-wa"></div>
+          <div class="info amber">Los envíos se hacen desde Firebase Functions. Nunca se exponen los tokens en la app.</div>
+        </div>
+      </div>
+      <!-- Hotel config -->
+      <div id="cfg-hotel" style="display:none">
+        <div class="card">
+          <div class="ct" style="margin-bottom:12px">Configuración del hotel</div>
+          <div class="fg"><label class="fl">Nombre</label><input class="fi" id="h-nombre" value="Hyde House Hotel"></div>
+          <div class="fr">
+            <div class="fg"><label class="fl">Pisos</label><input class="fi" type="number" id="h-pisos" value="41"></div>
+            <div class="fg"><label class="fl">Hab. por piso</label><input class="fi" type="number" id="h-hxp" value="10"></div>
+          </div>
+          <div class="fg"><label class="fl">Suites (separadas por coma)</label><input class="fi" id="h-suites" placeholder="PH01, STE02"></div>
+          <div class="fg"><label class="fl">Áreas comunes</label><input class="fi" id="h-areas" placeholder="Lobby, Pool, Spa, Gym"></div>
+          <button class="btn g lleno" onclick="guardarHotel()">💾 Guardar hotel</button>
+        </div>
+      </div>
+      <!-- QR -->
+      <div id="cfg-qr" style="display:none">
+        <div class="card">
+          <div class="ct" style="margin-bottom:14px">📲 Descargar la app</div>
+          <div class="qr-wrap">
+            <canvas id="qr-canvas"></canvas>
+            <div style="font-size:13px;font-weight:600;color:var(--n600);text-align:center">Escanea para instalar HK Pro</div>
+            <div style="font-size:11px;color:var(--n400);text-align:center;max-width:240px;line-height:1.5">iPhone: Safari → Compartir → Añadir a pantalla de inicio<br>Android: Chrome → Menú → Añadir a pantalla de inicio</div>
+          </div>
+          <div class="info blue">URL: <strong id="qr-url-text">---</strong></div>
+        </div>
+      </div>
+      <!-- Admin panel -->
+      <div id="cfg-admin" style="display:none">
+        <div class="card">
+          <div class="ct" style="margin-bottom:12px">⚙️ Administración</div>
+          <div class="fg"><label class="fl">Crear nuevo usuario</label></div>
+          <div class="fg"><label class="fl">Email</label><input class="fi" id="new-email" type="email" placeholder="usuario@hyde.com"></div>
+          <div class="fg"><label class="fl">Nombre completo</label><input class="fi" id="new-nombre" placeholder="Nombre Apellido"></div>
+          <div class="fg"><label class="fl">Contraseña temporal</label><input class="fi" id="new-pass" type="password" placeholder="Mín. 8 caracteres"></div>
+          <div class="fg"><label class="fl">Rol</label>
+            <select class="fs" id="new-rol">
+              <option value="housekeeper">🧹 Camarera / Housekeeper</option>
+              <option value="almacenero">📦 Almacenero</option>
+              <option value="supervisor">👔 Supervisor</option>
+              <option value="admin">⚙️ Administrador</option>
+            </select>
+          </div>
+          <button class="bigbtn navy" onclick="crearUsuario()">Crear usuario en Firebase</button>
+          <div class="divider"></div>
+          <div class="ct" style="margin-bottom:10px">Audit Log</div>
+          <div id="audit-list"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /contenido -->
+
+  <nav class="bnav" id="bottom-nav">
+    <button class="nb activo" onclick="irA('hk')" id="nb-hk">
+      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      <span>Inicio</span>
+    </button>
+    <button class="nb" onclick="irA('sol')" id="nb-sol" style="display:none">
+      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      <span>Solicitudes</span><div class="punto" id="pt-sol"></div>
+    </button>
+    <button class="nb" onclick="irA('alm')" id="nb-alm" style="display:none">
+      <svg viewBox="0 0 24 24"><path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+      <span>Almacén</span><div class="punto" id="pt-alm"></div>
+    </button>
+    <button class="nb" onclick="irA('sup')" id="nb-sup" style="display:none">
+      <svg viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+      <span>Supervisión</span><div class="punto" id="pt-sup"></div>
+    </button>
+    <button class="nb" onclick="irA('chat')" id="nb-chat">
+      <svg viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      <span>Chat</span>
+    </button>
+    <button class="nb" onclick="irA('cfg')" id="nb-cfg">
+      <svg viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <span>Config</span>
+    </button>
+  </nav>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ══ FIREBASE CONFIG ══════════════════════════════
+const FB_CONFIG = {
+  apiKey:            "AIzaSyAm-XD0cJJR6JjHwd093ijnoh3qcq4UkDg",
+  authDomain:        "hk-pro-housekeeping.firebaseapp.com",
+  databaseURL:       "https://hk-pro-housekeeping-default-rtdb.firebaseio.com",
+  projectId:         "hk-pro-housekeeping",
+  storageBucket:     "hk-pro-housekeeping.appspot.com",
+  messagingSenderId: "890258208844",
+  appId:             "1:890258208844:web:fa13c82c89062c5054dce9"
+};
+firebase.initializeApp(FB_CONFIG);
+const auth     = firebase.auth();
+const db       = firebase.firestore();
+const storage  = firebase.storage();
+const functions= firebase.functions();
+
+// ══ ESTADO GLOBAL ════════════════════════════════
+let CU       = null; // current user
+let CFG      = { hotelNombre:'Hyde House Hotel', pisos:41, hxp:10, suites:[], areas:[] };
+let WA       = { almacenero:'', supervisor:'', admin:'', grupoLink:'' };
+let INVENTARIO = [];
+let selPri   = 'normal';
+let selProdId = null;
+let canalActivo = 'housekeeping';
+let chatUnsub = null;
+let hlFotosFiles = [];
+let hlVideoFile  = null;
+let incFotoFile  = null;
+let invAbierto   = {};
+let ultimoReporte= '';
+const ROLES = { housekeeper:1, almacenero:2, supervisor:3, admin:4 };
+
+// ══ AUTH ══════════════════════════════════════════
+async function hacerLogin(){
+  const email = (document.getElementById('l-email').value||'').trim();
+  const pass  = document.getElementById('l-pass').value;
+  const err   = document.getElementById('l-err');
+  const btn   = document.getElementById('l-btn');
+  if(!email||!pass){ err.textContent='⚠️ Completa email y contraseña'; return; }
+  btn.disabled=true; btn.textContent='Iniciando sesión...'; err.textContent='';
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch(e){
+    err.textContent = tradErr(e.code);
+    btn.disabled=false; btn.innerHTML='<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Entrar al sistema';
+  }
+}
+async function loginGoogle(){
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try { await auth.signInWithPopup(provider); }
+  catch(e){ document.getElementById('l-err').textContent = tradErr(e.code); }
+}
+async function cerrarSesion(){ await auth.signOut(); location.reload(); }
+
+function tradErr(code){
+  const m={
+    'auth/user-not-found':'⚠️ Usuario no encontrado',
+    'auth/wrong-password':'⚠️ Contraseña incorrecta',
+    'auth/invalid-credential':'⚠️ Credenciales inválidas',
+    'auth/too-many-requests':'⚠️ Demasiados intentos. Espera unos minutos',
+    'auth/network-request-failed':'⚠️ Sin conexión a internet',
+    'auth/popup-closed-by-user':'',
+  };
+  return m[code]||'⚠️ Error: '+code;
+}
+
+// ══ AUTH STATE ════════════════════════════════════
+auth.onAuthStateChanged(async user => {
+  if(!user){
+    document.getElementById('login').classList.remove('oculto');
+    document.getElementById('app').classList.remove('activo');
+    return;
+  }
+  try {
+    const snap = await db.collection('usuarios').doc(user.uid).get();
+    if(!snap.exists){
+      // Primer login con Google: crear doc
+      CU = { uid:user.uid, nombre:user.displayName||'Usuario', email:user.email, rol:'housekeeper' };
+      await db.collection('usuarios').doc(user.uid).set({
+        ...CU, creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } else {
+      CU = { uid:user.uid, ...snap.data() };
+    }
+  } catch(e){
+    CU = { uid:user.uid, nombre:user.displayName||'Usuario', email:user.email, rol:'housekeeper' };
+  }
+  document.getElementById('login').classList.add('oculto');
+  document.getElementById('app').classList.add('activo');
+  initApp();
+});
+
+// ══ INIT APP ══════════════════════════════════════
+async function initApp(){
+  aplicarRol();
+  construirHabs();
+  await cargarInventario();
+  iniciarListeners();
+  iniciarChatListener();
+  setInterval(tick,1000); tick();
+  renderPerfilInfo();
+  generarQR();
+  if(CU.rol==='almacenero') irA('alm');
+  else if(CU.rol==='supervisor'||CU.rol==='admin') irA('sol');
+  toast(`👋 ¡Bienvenido/a, ${CU.nombre.split(' ')[0]}!`);
+}
+
+function aplicarRol(){
+  const rl={housekeeper:'🧹 Camarera',almacenero:'📦 Almacenero',supervisor:'👔 Supervisor',admin:'⚙️ Admin'};
+  const rs=document.getElementById('rstrip');
+  rs.className='rstrip '+(CU.rol||'housekeeper');
+  document.getElementById('rtxt').textContent=CU.nombre+' — '+(rl[CU.rol]||CU.rol);
+  document.getElementById('tb-usuario').textContent=(rl[CU.rol]||CU.rol)+' · '+CU.email;
+  const nivel = ROLES[CU.rol]||1;
+  // Mostrar/ocultar botones de nav según rol
+  if(nivel>=2){ // almacenero+
+    document.getElementById('nb-sol').style.display='';
+    document.getElementById('nb-alm').style.display='';
+  }
+  if(nivel>=3){ // supervisor+
+    document.getElementById('nb-sup').style.display='';
+  }
+  if(nivel>=4){ // admin
+    document.getElementById('sc-admin-tab').style.display='';
+    document.getElementById('btn-editar-wa').style.display='';
+  }
+  // HK no ve stats administrativos
+  if(nivel<2){
+    document.getElementById('stats-grid').style.display='none';
+  }
+  // Botón añadir producto solo para almacenero+
+  const btnAdd=document.getElementById('btn-add-prod');
+  if(btnAdd) btnAdd.style.display=nivel<2?'none':'';
+}
+
+// ══ HABITACIONES ══════════════════════════════════
+function construirHabs(){
+  const selectIds=['sol-hab','hl-hab','inc-hab'];
+  selectIds.forEach(id=>{
+    const s=document.getElementById(id);
+    if(!s)return;
+    s.innerHTML='<option value="">Seleccionar habitación...</option>';
+    for(let p=1;p<=CFG.pisos;p++){
+      const og=document.createElement('optgroup');og.label='Piso '+p;
+      for(let h=1;h<=CFG.hxp;h++){
+        const n=p*100+h,o=document.createElement('option');
+        o.value=String(n);o.textContent='Hab. '+n;
+        // Prioridad automática: terminan en 01
+        if(n%100===1) o.textContent+=' 🔴';
+        og.appendChild(o);
+      }
+      s.appendChild(og);
+    }
+    (CFG.suites||[]).filter(Boolean).forEach(suite=>{
+      const o=document.createElement('option');o.value=suite;o.textContent=suite+' (Suite)';s.appendChild(o);
+    });
+    (CFG.areas||[]).filter(Boolean).forEach(area=>{
+      const o=document.createElement('option');o.value=area;o.textContent=area+' (Área común)';s.appendChild(o);
+    });
+  });
+}
+
+function esPrioridadMax(hab){
+  const n=parseInt(hab);
+  return n%100===1; // termina en 01
+}
+
+// ══ INVENTARIO (Firestore) ════════════════════════
+async function cargarInventario(){
+  db.collection('inventario').orderBy('categoria').onSnapshot(snap=>{
+    INVENTARIO = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderInventario();
+    actualizarStats();
+    llenarSelectProductos();
+  }, ()=>{});
+}
+
+function calcFin(p){ return Math.max(0,(p.existenciaInicial||0)+(p.entradas||0)-(p.salidas||0)); }
+function calcPct(p){ return Math.round((calcFin(p)/Math.max((p.existenciaInicial||0)+(p.entradas||0),1))*100); }
+function pst(p){ const f=calcFin(p); return f===0?'agotado':f<=(p.minimo||0)?'bajo':'ok'; }
+function pcol(s){ return s==='ok'?'var(--g)':s==='bajo'?'var(--y)':'var(--r)'; }
+
+function renderInventario(){
+  const el=document.getElementById('lista-inv');if(!el)return;
+  const q=(document.getElementById('inv-buscar')||{}).value||'';
+  let data=INVENTARIO;
+  if(q)data=data.filter(p=>(p.nombre||'').toLowerCase().includes(q.toLowerCase())||(p.sku||'').toLowerCase().includes(q.toLowerCase()));
+  if(!data.length){el.innerHTML='<div class="vacio"><div class="vacio-ico">📦</div><div class="vacio-tit">Inventario vacío</div><div class="vacio-sub">Añade productos con el botón "+ Añadir"</div></div>';return;}
+  const cats=['linen','refill','supply','clean','otro'];
+  const catN={linen:'🛏 Linen',refill:'🧴 Refill',supply:'🧻 Supplies',clean:'🧼 Limpieza',otro:'📦 Otros'};
+  el.innerHTML=cats.map(cat=>{
+    const items=data.filter(p=>p.categoria===cat);if(!items.length)return'';
+    const bajos=items.filter(p=>pst(p)!=='ok').length;
+    const ab=invAbierto[cat];
+    return`<div class="inv-sec">
+      <div class="inv-hdr" onclick="toggleInv('${cat}')">
+        <div style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">${catN[cat].split(' ')[0]}</div>
+        <div class="inv-hdr-tit">${catN[cat]} (${items.length})</div>
+        ${bajos?`<span class="inv-hdr-bdg" style="background:rgba(220,38,38,.3);color:#fca5a5">⚠️ ${bajos}</span>`:'<span class="inv-hdr-bdg">✅</span>'}
+        <span style="font-size:18px;color:rgba(255,255,255,.4);transition:transform .25s${ab?';transform:rotate(90deg)':''}">›</span>
+      </div>
+      <div class="inv-body${ab?' abierto':''}">
+        ${items.map(p=>{const f=calcFin(p),s=pst(p),pct=calcPct(p);
+          return`<div class="inv-row">
+            <div class="inv-izq">
+              <div class="inv-nombre">${p.nombre}</div>
+              ${p.sku?`<div class="inv-sku">${p.sku}</div>`:''}
+              <div class="inv-meta">Inicio:${p.existenciaInicial||0} +${p.entradas||0} −${p.salidas||0} · Mín:${p.minimo||0} ${p.unidad||'ud'}</div>
+              <div style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap">
+                <span class="bdg ${s==='ok'?'ok':s==='bajo'?'bajo':'agot'}">${s==='ok'?'✅ OK':s==='bajo'?'⚠️ Bajo':'🔴 Agotado'}</span>
+                ${ROLES[CU.rol]>=2?`<button class="btn gold" style="height:26px;font-size:10px" onclick="abrirAjuste('${p.id}')">✏️ Ajustar</button>`:''}
+              </div>
+            </div>
+            <div class="inv-der">
+              <div class="inv-cant" style="color:${pcol(s)}">${f}</div>
+              <div class="inv-ud">${p.unidad||'ud'}</div>
+              <div class="barra"><div class="barra-fill" style="width:${pct}%;background:${pcol(s)}"></div></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleInv(cat){invAbierto[cat]=!invAbierto[cat];renderInventario();}
+
+// ══ AUTOCOMPLETE PRODUCTOS ════════════════════════
+function buscarProducto(q){
+  const lista=document.getElementById('sol-autocomplete');
+  if(!lista)return;
+  if(!q||q.length<2){lista.classList.remove('show');return;}
+  const resultados=INVENTARIO.filter(p=>
+    (p.nombre||'').toLowerCase().includes(q.toLowerCase())||
+    (p.sku||'').toLowerCase().includes(q.toLowerCase())
+  ).slice(0,8);
+  if(!resultados.length){lista.classList.remove('show');return;}
+  lista.innerHTML=resultados.map(p=>{
+    const f=calcFin(p),s=pst(p);
+    return`<div class="ac-item" onclick="elegirProducto('${p.id}')">
+      <div class="ac-name">${p.nombre}<span class="ac-badge" style="background:${s==='ok'?'var(--gl)':s==='bajo'?'var(--yl)':'var(--rl)'};color:${s==='ok'?'var(--g)':s==='bajo'?'var(--y)':'var(--r)'}">${s==='ok'?'Stock OK':s==='bajo'?'Bajo':'Agotado'}</span></div>
+      <div class="ac-meta">SKU: ${p.sku||'—'} · Existencia: ${f} ${p.unidad||'ud'} · ${p.categoria||''}</div>
+    </div>`;
+  }).join('');
+  lista.classList.add('show');
+}
+function elegirProducto(id){
+  const p=INVENTARIO.find(x=>x.id===id);if(!p)return;
+  selProdId=id;
+  document.getElementById('sol-buscar-prod').value='';
+  document.getElementById('sol-autocomplete').classList.remove('show');
+  document.getElementById('sol-prod-nombre').textContent=p.nombre;
+  document.getElementById('sol-prod-meta').textContent=`SKU: ${p.sku||'—'} · Stock: ${calcFin(p)} ${p.unidad||'ud'}`;
+  document.getElementById('sol-prod-elegido').style.display='block';
+}
+function limpiarProdSel(){
+  selProdId=null;
+  document.getElementById('sol-buscar-prod').value='';
+  document.getElementById('sol-prod-elegido').style.display='none';
+}
+// Cerrar autocomplete al click fuera
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.autocomplete-wrap')){
+    document.querySelectorAll('.autocomplete-list').forEach(el=>el.classList.remove('show'));
+  }
+});
+
+function llenarSelectProductos(){
+  ['ent-prod','kar-prod'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const v=el.value;
+    el.innerHTML=id==='ent-prod'?'<option value="">Seleccionar...</option>':'<option value="">Todos</option>';
+    INVENTARIO.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.nombre;el.appendChild(o);});
+    el.value=v;
+  });
+}
+
+// ══ ENVIAR SOLICITUD ══════════════════════════════
+function setPri(p){
+  selPri=p;
+  ['normal','alta','urgente'].forEach(x=>{
+    const el=document.getElementById('pt-'+x);
+    if(!el)return;
+    if(x===p) el.classList.add('activo');
+    else el.classList.remove('activo');
+  });
+  const btn=document.getElementById('btn-enviar-sol');
+  if(btn) btn.className='bigbtn'+(p==='urgente'?' rojo':'');
+}
+setPri('normal');
+
+async function enviarSolicitud(){
+  const hab  = document.getElementById('sol-hab').value;
+  const qty  = parseInt(document.getElementById('sol-qty').value)||1;
+  const nota = document.getElementById('sol-nota').value.trim();
+  const prod = selProdId ? INVENTARIO.find(x=>x.id===selProdId) : null;
+  if(!hab){ toast('⚠️ Selecciona una habitación'); return; }
+  if(!prod){ toast('⚠️ Selecciona un producto del listado'); return; }
+  const btn=document.getElementById('btn-enviar-sol');
+  btn.disabled=true; btn.textContent='Enviando...';
+  try {
+    const fecha=new Date().toISOString().slice(0,10);
+    const ts=firebase.firestore.FieldValue.serverTimestamp();
+    // Guardar solicitud
+    await db.collection('solicitudes').add({
+      hab, item:prod.nombre, itemId:prod.id, qty, nota,
+      prioridad:selPri, estado:'pending',
+      uidUsuario:CU.uid, nombreUsuario:CU.nombre, rolUsuario:CU.rol,
+      fecha, ts,
+      esEntrada:hab.endsWith('01'),
+      esTermina01:hab.toString().endsWith('01'),
+    });
+    // Descontar inventario
+    await db.collection('inventario').doc(prod.id).update({
+      salidas: firebase.firestore.FieldValue.increment(qty),
+      updatedAt: ts, updatedBy: CU.uid
+    });
+    // Movimiento kardex
+    await db.collection('movimientos').add({
+      tipo:'salida', prodId:prod.id, prodNombre:prod.nombre,
+      qty, motivo:`Hab.${hab} — ${CU.nombre}`,
+      usuario:CU.nombre, uidUsuario:CU.uid,
+      fecha, ts
+    });
+    cerrarModal('modal-sol');
+    selProdId=null;
+    document.getElementById('sol-prod-elegido').style.display='none';
+    document.getElementById('sol-buscar-prod').value='';
+    document.getElementById('sol-nota').value='';
+    document.getElementById('sol-qty').value='1';
+    toast(selPri==='urgente'?'🚨 Solicitud URGENTE enviada':'✅ Solicitud enviada');
+    if(navigator.vibrate) navigator.vibrate(selPri==='urgente'?[100,50,100]:50);
+  } catch(e){ toast('❌ '+e.message); }
+  finally{ btn.disabled=false; btn.textContent='Enviar solicitud'; }
+}
+
+// ══ LISTENERS EN TIEMPO REAL ══════════════════════
+function iniciarListeners(){
+  // Solicitudes
+  db.collection('solicitudes')
+    .orderBy('ts','desc').limit(100)
+    .onSnapshot(snap=>{
+      const solic=snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderFeedSolicitudes(solic);
+      actualizarStats(solic);
+      renderMisSolicitudes(solic);
+      renderPriorityBanner(solic);
+    }, ()=>{});
+  // Hab listas del día (propias o supervisor)
+  const hoy=new Date().toISOString().slice(0,10);
+  let q=db.collection('habitaciones_listas').where('fecha','==',hoy).orderBy('ts','desc');
+  if(CU.rol==='housekeeper') q=q.where('uidUsuario','==',CU.uid);
+  q.onSnapshot(snap=>{
+    const habs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderHabsListaHK(habs);
+    document.getElementById('hk-hoy-cnt').textContent=habs.filter(h=>h.estado==='lista').length+' listas';
+  }, ()=>{});
+  // Incidencias abiertas para supervisores
+  if(ROLES[CU.rol]>=3){
+    db.collection('incidencias').where('estadoInc','==','abierta')
+      .onSnapshot(snap=>{
+        const cnt=snap.size;
+        _dot('pt-sup',cnt>0);
+      }, ()=>{});
+  }
+  setConn(true);
+}
+
+function renderFeedSolicitudes(solic){
+  const el=document.getElementById('feed-solic');if(!el)return;
+  const activas=solic.filter(s=>s.estado!=='closed'&&s.estado!=='delivered').slice(0,50);
+  _s('feed-cnt', activas.length+' pendientes');
+  if(!activas.length){el.innerHTML='<div class="vacio"><div class="vacio-ico">📡</div><div class="vacio-sub">Sin solicitudes activas</div></div>';return;}
+  const PA=ROLES[CU.rol]>=3, EA=ROLES[CU.rol]>=2;
+  el.innerHTML=activas.map(s=>{
+    const st=ESTADOS[s.estado]||ESTADOS.pending;
+    const isUrgMax=s.prioridad==='urgente'&&(s.esTermina01||s.esEntrada);
+    return`<div class="rc${s.prioridad==='urgente'?' urg':''}${isUrgMax?' entrada-urgente':''}" style="border-radius:0;margin-bottom:0;border-bottom:1px solid var(--border);border-top:none;border-left:none;border-right:none">
+      <div class="rc-hdr">
+        <div class="rc-emo" style="background:#f3f4f6;font-size:16px">📦</div>
+        <div class="rc-info">
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:3px">
+            ${isUrgMax?'<span class="prioridad-max">🔴 MÁXIMA PRIORIDAD</span>':''}
+            ${s.prioridad==='urgente'?'<span class="bdg urg">🚨 URGENTE</span>':''}
+            ${s.esTermina01?'<span class="bdg entrada">Terminación 01</span>':''}
+            ${s.esEntrada?'<span class="bdg entrada">Entrada</span>':''}
+          </div>
+          <div class="rc-tit">${s.item} ×${s.qty} — Hab. ${s.hab}</div>
+          <div class="rc-meta">${s.nombreUsuario} · <span class="bdg ${st.c}">${st.l}</span></div>
+          <div class="rc-hora">${s.ts?.toDate?.()?.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})||'—'}</div>
+          ${s.nota?`<div style="font-size:11px;color:var(--n500);font-style:italic;margin-top:3px">${s.nota}</div>`:''}
+        </div>
+      </div>
+      <div class="rc-acts">
+        ${PA&&s.estado==='pending'?`<button class="btn b" style="height:26px;font-size:10px" onclick="cambiarEstado('${s.id}','approved')">✓ Aprobar</button>`:''}
+        ${EA&&s.estado==='approved'?`<button class="btn p" style="height:26px;font-size:10px" onclick="cambiarEstado('${s.id}','preparing')">📦 Preparar</button>`:''}
+        ${EA&&s.estado==='preparing'?`<button class="btn g" style="height:26px;font-size:10px" onclick="cambiarEstado('${s.id}','delivered')">✅ Entregar</button>`:''}
+        ${PA&&s.estado==='delivered'?`<button class="btn n" style="height:26px;font-size:10px" onclick="cambiarEstado('${s.id}','closed')">🔒 Cerrar</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMisSolicitudes(solic){
+  const el=document.getElementById('hk-mis-solic');if(!el)return;
+  const mis=solic.filter(s=>s.uidUsuario===CU.uid).slice(0,10);
+  if(!mis.length){el.innerHTML='<div class="vacio" style="padding:18px"><div class="vacio-sub">Tus solicitudes aparecerán aquí</div></div>';return;}
+  const PA=ROLES[CU.rol]>=3,EA=ROLES[CU.rol]>=2;
+  el.innerHTML=mis.map(s=>{
+    const st=ESTADOS[s.estado]||ESTADOS.pending;
+    return`<div class="rc${s.prioridad==='urgente'?' urg':''}">
+      <div class="rc-hdr">
+        <div class="rc-emo" style="background:#f3f4f6">📦</div>
+        <div class="rc-info">
+          <div class="rc-tit">${s.item} ×${s.qty} — Hab. ${s.hab}</div>
+          <div class="rc-hora">${s.ts?.toDate?.()?.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})||s.fecha}</div>
+        </div>
+        <span class="bdg ${st.c}">${st.l}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderPriorityBanner(solic){
+  const el=document.getElementById('priority-banner');if(!el)return;
+  const max=solic.filter(s=>s.prioridad==='urgente'&&s.estado!=='closed'&&(s.esTermina01||s.esEntrada));
+  if(!max.length){el.innerHTML='';return;}
+  el.innerHTML=`<div class="prioridad-banner">
+    <span style="font-size:18px">🔴</span>
+    <span>${max.length} hab. de máxima prioridad urgente</span>
+    <span style="margin-left:auto;font-family:var(--m)">${max.map(s=>'Hab.'+s.hab).join(', ')}</span>
+  </div>`;
+}
+
+async function cambiarEstado(id, estado){
+  try {
+    await db.collection('solicitudes').doc(id).update({
+      estado,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: CU.uid
+    });
+    toast('✅ Estado actualizado');
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+function actualizarStats(solic){
+  if(!solic) return;
+  const hoy=new Date().toDateString();
+  const tR=solic.filter(s=>s.ts?.toDate?.()?.toDateString()===hoy);
+  _s('kpi-hoy', tR.length);
+  _s('kpi-pend', solic.filter(s=>s.estado==='pending').length);
+  _s('kpi-urg', solic.filter(s=>s.prioridad==='urgente'&&s.estado!=='closed').length);
+  _s('kpi-entr', tR.filter(s=>s.estado==='delivered').length);
+  const bajos=INVENTARIO.filter(p=>pst(p)!=='ok');
+  _s('kpi-bajo', bajos.filter(p=>pst(p)==='bajo').length);
+  _s('kpi-agot', bajos.filter(p=>pst(p)==='agotado').length);
+  _dot('pt-sol', solic.filter(s=>s.estado==='pending').length>0);
+  _dot('pt-alm', bajos.length>0);
+}
+
+const ESTADOS={
+  pending:   {l:'Pendiente', c:'pend'},
+  approved:  {l:'Aprobada',  c:'apro'},
+  preparing: {l:'Preparando',c:'prep'},
+  delivered: {l:'Entregada', c:'entr'},
+  closed:    {l:'Cerrada',   c:'cerr'},
+};
+
+// ══ HAB LISTAS ════════════════════════════════════
+let hlFotosLocal = []; // {file, dataURL, nombre}
+
+function previsualizarFotos(input, prefix){
+  const files = Array.from(input.files);
+  if(hlFotosLocal.length + files.length > 5){ toast('⚠️ Máximo 5 fotos'); return; }
+  files.forEach(file=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      hlFotosLocal.push({file, dataURL:e.target.result, nombre:file.name});
+      renderFotosPreview();
+    };
+    r.readAsDataURL(file);
+  });
+  input.value='';
+}
+function renderFotosPreview(){
+  const el=document.getElementById('hl-fotos-preview');if(!el)return;
+  el.innerHTML=hlFotosLocal.map((f,i)=>`
+    <div class="foto-item">
+      <img src="${f.dataURL}" style="width:100%;height:100%;object-fit:cover">
+      <button class="foto-del" onclick="eliminarFotoLocal(${i})">✗</button>
+    </div>`).join('');
+}
+function eliminarFotoLocal(i){ hlFotosLocal.splice(i,1); renderFotosPreview(); }
+
+let hlVideoLocal = null;
+function previsualizarVideo(input){
+  const file=input.files[0];if(!file)return;
+  if(file.size>100*1024*1024){ toast('⚠️ Video máximo 100MB'); return; }
+  hlVideoLocal={file};
+  const el=document.getElementById('hl-video-preview');
+  if(el) el.innerHTML=`<div class="foto-item" style="aspect-ratio:16/9;width:100%"><video src="${URL.createObjectURL(file)}" style="width:100%;height:100%;object-fit:cover" controls></video><button class="foto-del" onclick="eliminarVideoLocal()">✗</button></div>`;
+  input.value='';
+}
+function eliminarVideoLocal(){ hlVideoLocal=null; const el=document.getElementById('hl-video-preview');if(el)el.innerHTML=''; }
+
+async function guardarHabLista(){
+  const hab    = document.getElementById('hl-hab').value;
+  const estado = document.getElementById('hl-estado').value;
+  const obs    = document.getElementById('hl-obs').value.trim();
+  if(!hab){ toast('⚠️ Selecciona una habitación'); return; }
+  const btn=document.querySelector('#modal-hab-lista .bigbtn');
+  if(btn){ btn.disabled=true; btn.textContent='Guardando...'; }
+  try {
+    const fecha=new Date().toISOString().slice(0,10);
+    const ts=firebase.firestore.FieldValue.serverTimestamp();
+    // Subir fotos a Storage
+    const fotosURLs=[];
+    for(const foto of hlFotosLocal){
+      const ref=storage.ref(`habitaciones/${CU.uid}/${fecha}/${Date.now()}_${foto.nombre}`);
+      await ref.put(foto.file);
+      const url=await ref.getDownloadURL();
+      fotosURLs.push(url);
+    }
+    // Subir video
+    let videoURL='';
+    if(hlVideoLocal){
+      const ref=storage.ref(`habitaciones/${CU.uid}/${fecha}/video_${Date.now()}.mp4`);
+      await ref.put(hlVideoLocal.file);
+      videoURL=await ref.getDownloadURL();
+    }
+    await db.collection('habitaciones_listas').add({
+      hab, estado, obs, fotosURLs, videoURL,
+      uidUsuario:CU.uid, nombreUsuario:CU.nombre,
+      fecha, ts, cerrado:false
+    });
+    // Registro diario
+    await db.collection('registro_diario').add({
+      hab, estado, obs, fotosURLs, videoURL,
+      uidUsuario:CU.uid, nombreUsuario:CU.nombre,
+      fecha, ts, tipo:'habitacion_lista'
+    });
+    cerrarModal('modal-hab-lista');
+    hlFotosLocal=[];hlVideoLocal=null;
+    renderFotosPreview();eliminarVideoLocal();
+    document.getElementById('hl-obs').value='';
+    toast('✅ Habitación '+(estado==='lista'?'marcada como lista':'guardada'));
+  } catch(e){ toast('❌ '+e.message); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='💾 Guardar habitación lista'; } }
+}
+
+function renderHabsListaHK(habs){
+  const el=document.getElementById('hk-habs-lista');if(!el)return;
+  if(!habs.length){el.innerHTML='<div class="vacio" style="padding:18px"><div class="vacio-sub">Registra tus habitaciones con el botón "Hab. lista"</div></div>';return;}
+  el.innerHTML=habs.map(h=>`
+    <div class="hl-card ${h.estado==='lista'?'lista':'pendiente'}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-size:15px;font-weight:700">Hab. ${h.hab}</div>
+          <div style="font-size:11px;color:var(--n500);margin-top:2px">${h.ts?.toDate?.()?.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})||h.fecha}</div>
+          ${h.obs?`<div style="font-size:12px;color:var(--n600);margin-top:4px;font-style:italic">${h.obs}</div>`:''}
+        </div>
+        <span class="bdg ${h.estado==='lista'?'entr':'pend'}">${h.estado==='lista'?'✅ Lista':'🔍 Revisión'}</span>
+      </div>
+      ${h.fotosURLs?.length?`<div class="hl-fotos">${h.fotosURLs.map(u=>`<img src="${u}" class="hl-foto-thumb" onclick="verFoto('${u}')">`).join('')}</div>`:''}
+      ${h.videoURL?`<div style="margin-top:8px"><video src="${h.videoURL}" style="width:100%;border-radius:8px;max-height:160px" controls></video></div>`:''}
+    </div>`).join('');
+}
+
+function verFoto(url){ window.open(url,'_blank'); }
+
+// ══ INCIDENCIAS ═══════════════════════════════════
+let incFotoLocal = null;
+function previsualizarIncFoto(input){
+  const file=input.files[0];if(!file)return;
+  incFotoLocal={file};
+  const r=new FileReader();
+  r.onload=e=>{
+    const el=document.getElementById('inc-foto-preview');
+    if(el) el.innerHTML=`<div class="foto-item" style="width:100%;aspect-ratio:16/9"><img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:8px"><button class="foto-del" onclick="eliminarIncFoto()">✗</button></div>`;
+  };
+  r.readAsDataURL(file);
+  input.value='';
+}
+function eliminarIncFoto(){ incFotoLocal=null; const el=document.getElementById('inc-foto-preview');if(el)el.innerHTML=''; }
+
+async function guardarIncidencia(){
+  const hab  = document.getElementById('inc-hab').value;
+  const tipo = document.getElementById('inc-tipo').value;
+  const desc = document.getElementById('inc-desc').value.trim();
+  if(!hab){ toast('⚠️ Selecciona habitación'); return; }
+  if(!desc){ toast('⚠️ Describe la incidencia'); return; }
+  const btn=document.querySelector('#modal-incidencia .bigbtn');
+  if(btn){ btn.disabled=true; btn.textContent='Enviando...'; }
+  try {
+    const fecha=new Date().toISOString().slice(0,10);
+    const ts=firebase.firestore.FieldValue.serverTimestamp();
+    let fotoURL='';
+    if(incFotoLocal){
+      const ref=storage.ref(`incidencias/${CU.uid}/${fecha}/inc_${Date.now()}.jpg`);
+      await ref.put(incFotoLocal.file);
+      fotoURL=await ref.getDownloadURL();
+    }
+    await db.collection('incidencias').add({
+      hab, tipo, descripcion:desc, fotoURL,
+      estadoInc:'abierta',
+      uidUsuario:CU.uid, nombreUsuario:CU.nombre,
+      fecha, ts
+    });
+    cerrarModal('modal-incidencia');
+    incFotoLocal=null;
+    document.getElementById('inc-foto-preview').innerHTML='';
+    document.getElementById('inc-desc').value='';
+    toast('🚨 Incidencia reportada — se notificó al supervisor');
+  } catch(e){ toast('❌ '+e.message); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='Enviar incidencia al supervisor'; } }
+}
+
+// ══ SUPERVISIÓN ═══════════════════════════════════
+async function cargarHabsListas(){
+  const fecha=document.getElementById('sup-fecha')?.value||new Date().toISOString().slice(0,10);
+  const quien=document.getElementById('sup-quien')?.value||'';
+  let q=db.collection('habitaciones_listas').where('fecha','==',fecha).orderBy('ts','desc');
+  if(quien) q=q.where('uidUsuario','==',quien);
+  try {
+    const snap=await q.get();
+    const habs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderHabsListaSup(habs);
+  } catch(e){}
+}
+function renderHabsListaSup(habs){
+  const el=document.getElementById('lista-habs-sup');if(!el)return;
+  if(!habs.length){el.innerHTML='<div class="vacio"><div class="vacio-ico">🛏</div><div class="vacio-sub">Sin registros para este filtro</div></div>';return;}
+  el.innerHTML=habs.map(h=>`
+    <div class="hl-card ${h.estado==='lista'?'lista':'pendiente'}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div>
+          <div style="font-size:15px;font-weight:700">Hab. ${h.hab}</div>
+          <div style="font-size:11px;color:var(--n500)">${h.nombreUsuario} · ${h.ts?.toDate?.()?.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})||h.fecha}</div>
+        </div>
+        <span class="bdg ${h.estado==='lista'?'entr':'pend'}">${h.estado==='lista'?'✅ Lista':h.estado==='revision'?'🔍 Revisión':'🔧 Mantenimiento'}</span>
+      </div>
+      ${h.obs?`<div style="font-size:12px;color:var(--n600);font-style:italic;margin-bottom:7px">${h.obs}</div>`:''}
+      ${h.fotosURLs?.length?`<div class="hl-fotos">${h.fotosURLs.map(u=>`<img src="${u}" class="hl-foto-thumb" onclick="verFoto('${u}')">`).join('')}</div>`:''}
+      ${h.videoURL?`<div style="margin-top:8px"><video src="${h.videoURL}" style="width:100%;border-radius:8px;max-height:140px" controls></video></div>`:''}
+    </div>`).join('');
+}
+
+async function cargarIncidencias(){
+  const estado=document.getElementById('inc-estado-fil')?.value||'';
+  const fecha=document.getElementById('inc-fecha-fil')?.value||'';
+  let q=db.collection('incidencias').orderBy('ts','desc').limit(50);
+  if(estado) q=db.collection('incidencias').where('estadoInc','==',estado).orderBy('ts','desc').limit(50);
+  if(fecha)  q=db.collection('incidencias').where('fecha','==',fecha).orderBy('ts','desc').limit(50);
+  try {
+    const snap=await q.get();
+    const incs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderIncidencias(incs);
+  } catch(e){}
+}
+function renderIncidencias(incs){
+  const el=document.getElementById('lista-inc');if(!el)return;
+  if(!incs.length){el.innerHTML='<div class="vacio"><div class="vacio-ico">✅</div><div class="vacio-tit">Sin incidencias</div></div>';return;}
+  el.innerHTML=incs.map(inc=>`
+    <div class="inc-card">
+      <div class="inc-badge"><span class="bdg ${inc.estadoInc==='abierta'?'urg':'entr'}">${inc.estadoInc==='abierta'?'🔴 Abierta':'✅ Resuelta'}</span></div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:3px">Hab. ${inc.hab}</div>
+      <div style="font-size:11px;color:var(--n500)">${inc.nombreUsuario} · ${inc.ts?.toDate?.()?.toLocaleString('es-ES',{dateStyle:'short',timeStyle:'short'})||inc.fecha}</div>
+      <div style="margin-top:7px;font-size:13px;color:var(--n900);line-height:1.4">${inc.descripcion}</div>
+      ${inc.fotoURL?`<img src="${inc.fotoURL}" class="inc-foto" onclick="verFoto('${inc.fotoURL}')">`:''}
+      ${inc.estadoInc==='abierta'?`<div style="margin-top:10px;display:flex;gap:7px"><button class="btn g" onclick="resolverIncidencia('${inc.id}')">✓ Marcar resuelta</button></div>`:''}
+    </div>`).join('');
+}
+async function resolverIncidencia(id){
+  await db.collection('incidencias').doc(id).update({
+    estadoInc:'resuelta',
+    resueltoBy:CU.uid, resueltoEn:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  toast('✅ Incidencia marcada como resuelta');
+  cargarIncidencias();
+}
+
+async function cargarRegistroDiario(){
+  const fecha=document.getElementById('reg-fecha')?.value||new Date().toISOString().slice(0,10);
+  const quien=document.getElementById('reg-quien')?.value||'';
+  let q=db.collection('registro_diario').where('fecha','==',fecha).orderBy('ts','desc');
+  if(quien) q=q.where('uidUsuario','==',quien);
+  try {
+    const snap=await q.get();
+    const reg=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const el=document.getElementById('lista-registro');if(!el)return;
+    if(!reg.length){el.innerHTML='<div class="vacio"><div class="vacio-sub">Sin registros para esta fecha</div></div>';return;}
+    el.innerHTML=reg.map(r=>`
+      <div class="card">
+        <div style="display:flex;justify-content:space-between">
+          <div style="font-weight:700">Hab. ${r.hab} — ${r.tipo==='habitacion_lista'?'Habitación lista':'Registro'}</div>
+          <span class="bdg entr">✅</span>
+        </div>
+        <div style="font-size:11px;color:var(--n500);margin-top:3px">${r.nombreUsuario} · ${r.ts?.toDate?.()?.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})||''}</div>
+        ${r.obs?`<div style="font-size:12px;margin-top:5px;color:var(--n600)">${r.obs}</div>`:''}
+        ${r.fotosURLs?.length?`<div style="font-size:11px;color:var(--b);margin-top:5px">${r.fotosURLs.length} foto(s) adjunta(s)</div>`:''}
+      </div>`).join('');
+  } catch(e){}
+}
+
+// ══ CHAT (Firestore) ══════════════════════════════
+function iniciarChatListener(){ escucharCanal('housekeeping'); }
+function cambiarCanal(ch){
+  canalActivo=ch;
+  ['housekeeping','almacen','supervisores','mantenimiento'].forEach(c=>{
+    document.getElementById('ch-'+c)?.classList.toggle('activo',c===ch);
+  });
+  const tits={housekeeping:'🧹 Housekeeping',almacen:'📦 Almacén',supervisores:'👔 Supervisores',mantenimiento:'🔧 Mantenimiento'};
+  _s('chat-titulo',tits[ch]||ch);
+  escucharCanal(ch);
+}
+function escucharCanal(ch){
+  if(chatUnsub){ chatUnsub(); chatUnsub=null; }
+  const el=document.getElementById('chat-msgs');if(!el)return;
+  chatUnsub=db.collection('chat')
+    .where('canal','==',ch)
+    .orderBy('ts','asc').limitToLast(80)
+    .onSnapshot(snap=>{
+      const msgs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      el.innerHTML=msgs.map(m=>{
+        const esYo=m.uidUsuario===CU.uid;
+        return`<div class="burbuja${esYo?' saliente':m.esServicio?' sistema':''}">
+          ${!esYo&&!m.esServicio?`<div class="burbuja-quien">${m.nombreUsuario}</div>`:''}
+          ${(m.texto||'').replace(/\*([^*]+)\*/g,'<strong>$1</strong>')}
+          <div class="burbuja-hora">${m.ts?.toDate?.()?.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})||''}</div>
+        </div>`;
+      }).join('');
+      el.scrollTop=el.scrollHeight;
+    }, ()=>{});
+}
+async function enviarChat(){
+  const inp=document.getElementById('chat-inp');
+  const txt=inp.value.trim();if(!txt)return;
+  inp.value='';
+  try {
+    await db.collection('chat').add({
+      texto:txt, canal:canalActivo,
+      uidUsuario:CU.uid, nombreUsuario:CU.nombre,
+      ts:firebase.firestore.FieldValue.serverTimestamp(),
+      esServicio:false
+    });
+  } catch(e){ toast('❌ '+e.message); }
+}
+document.getElementById('chat-inp').addEventListener('keydown',e=>{if(e.key==='Enter')enviarChat();});
+
+// ══ NUEVO PRODUCTO ════════════════════════════════
+async function guardarProducto(){
+  if(ROLES[CU.rol]<2){ toast('⚠️ Sin permiso'); return; }
+  const nombre=document.getElementById('pm-nombre').value.trim();
+  if(!nombre){ toast('⚠️ Nombre obligatorio'); return; }
+  try {
+    await db.collection('inventario').add({
+      sku:document.getElementById('pm-sku').value.trim(),
+      categoria:document.getElementById('pm-cat').value,
+      nombre,
+      unidad:document.getElementById('pm-ud').value.trim()||'ud',
+      proveedor:document.getElementById('pm-prov').value.trim(),
+      existenciaInicial:parseFloat(document.getElementById('pm-init').value)||0,
+      entradas:0,salidas:0,
+      minimo:parseFloat(document.getElementById('pm-min').value)||5,
+      precio:parseFloat(document.getElementById('pm-precio').value)||0,
+      creadoBy:CU.uid, creadoEn:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    cerrarModal('modal-prod');
+    ['pm-sku','pm-nombre','pm-ud','pm-prov'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('pm-init').value='0';
+    document.getElementById('pm-min').value='5';
+    toast('✅ Producto añadido al inventario');
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+// ══ AJUSTE STOCK ══════════════════════════════════
+let adjProd=null;
+function abrirAjuste(id){
+  adjProd=INVENTARIO.find(p=>p.id===id);if(!adjProd)return;
+  abrirModal('modal-adj');
+  document.getElementById('adj-id').value=id;
+  document.getElementById('adj-tit').textContent='Ajuste: '+adjProd.nombre;
+  document.getElementById('adj-pnombre').textContent=adjProd.nombre;
+  document.getElementById('adj-actual').textContent=calcFin(adjProd)+' '+(adjProd.unidad||'ud');
+  document.getElementById('adj-qty').value=calcFin(adjProd);
+}
+async function guardarAjuste(){
+  const id=document.getElementById('adj-id').value;
+  const nueva=parseFloat(document.getElementById('adj-qty').value)||0;
+  const motivo=document.getElementById('adj-motivo').value;
+  const nota=document.getElementById('adj-nota').value.trim();
+  const p=INVENTARIO.find(x=>x.id===id);if(!p)return;
+  const antes=calcFin(p),diff=nueva-antes;
+  try {
+    const upd={updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:CU.uid};
+    if(diff>0)  upd.entradas=firebase.firestore.FieldValue.increment(diff);
+    if(diff<0)  upd.salidas=firebase.firestore.FieldValue.increment(Math.abs(diff));
+    if(diff!==0) await db.collection('inventario').doc(id).update(upd);
+    await db.collection('movimientos').add({
+      tipo:'ajuste',prodId:id,prodNombre:p.nombre,
+      qty:Math.abs(diff),antes,despues:nueva,
+      motivo,nota,usuario:CU.nombre,uidUsuario:CU.uid,
+      fecha:new Date().toISOString().slice(0,10),
+      ts:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    cerrarModal('modal-adj');
+    toast(`✅ Ajuste aplicado: ${antes} → ${nueva} ${p.unidad||'ud'}`);
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+// ══ ENTRADA STOCK ═════════════════════════════════
+async function registrarEntrada(){
+  const pid=document.getElementById('ent-prod').value;
+  const qty=parseFloat(document.getElementById('ent-qty').value)||0;
+  const precio=parseFloat(document.getElementById('ent-precio').value)||0;
+  const tipo=document.getElementById('ent-tipo').value;
+  const ref=document.getElementById('ent-ref').value.trim()||'Entrada manual';
+  if(!pid||qty<=0){ toast('⚠️ Selecciona producto y cantidad'); return; }
+  const p=INVENTARIO.find(x=>x.id===pid);if(!p)return;
+  try {
+    const upd={entradas:firebase.firestore.FieldValue.increment(qty),updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:CU.uid};
+    if(precio>0) upd.precio=precio;
+    await db.collection('inventario').doc(pid).update(upd);
+    await db.collection('movimientos').add({
+      tipo,prodId:pid,prodNombre:p.nombre,qty,
+      antes:calcFin(p),despues:calcFin(p)+qty,
+      motivo:ref,usuario:CU.nombre,uidUsuario:CU.uid,
+      fecha:new Date().toISOString().slice(0,10),
+      ts:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast(`✅ +${qty} ${p.unidad||'ud'} de ${p.nombre}`);
+    ['ent-qty','ent-precio','ent-ref'].forEach(id=>document.getElementById(id).value='');
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+// ══ KARDEX ════════════════════════════════════════
+async function renderKardex(){
+  const body=document.getElementById('kar-body');if(!body)return;
+  const prodF=document.getElementById('kar-prod')?.value||'';
+  const tipoF=document.getElementById('kar-tipo')?.value||'';
+  let q=db.collection('movimientos').orderBy('ts','desc').limit(200);
+  try {
+    const snap=await q.get();
+    let movs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(prodF) movs=movs.filter(m=>m.prodId===prodF);
+    if(tipoF) movs=movs.filter(m=>m.tipo===tipoF);
+    const cols={entrada:'var(--g)',salida:'var(--r)',ajuste:'var(--y)',traslado:'var(--b)'};
+    const icons={entrada:'↑',salida:'↓',ajuste:'⇅',traslado:'⇄'};
+    body.innerHTML=movs.map(m=>`<tr>
+      <td>${m.fecha||'—'}</td>
+      <td style="font-family:var(--m);font-size:10px">${m.ts?.toDate?.()?.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})||'—'}</td>
+      <td style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.prodNombre||'—'}</td>
+      <td style="color:${cols[m.tipo]||'var(--n900)'};font-weight:600;font-size:11px">${icons[m.tipo]||''} ${m.tipo}</td>
+      <td style="font-family:var(--m);font-weight:700;color:${cols[m.tipo]||'var(--n900)'}">${m.tipo==='salida'?'-':'+'}${m.qty||0}</td>
+      <td style="font-family:var(--m)">${m.antes??'—'}</td>
+      <td style="font-family:var(--m);font-weight:600">${m.despues??'—'}</td>
+      <td>${m.usuario||'—'}</td>
+      <td style="color:var(--n500);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.motivo||'—'}</td>
+    </tr>`).join('');
+    if(!body.innerHTML) body.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--n400);padding:20px">Sin movimientos</td></tr>';
+  } catch(e){}
+}
+
+// ══ REPORTES ══════════════════════════════════════
+let ultimoReporteTxt='';
+async function genReporte(periodo){
+  const dias={diario:1,semanal:7,mensual:30}[periodo]||7;
+  const desde=new Date(Date.now()-dias*86400000).toISOString().slice(0,10);
+  try {
+    const [invSnap,movSnap,solSnap]=await Promise.all([
+      db.collection('inventario').get(),
+      db.collection('movimientos').where('fecha','>=',desde).get(),
+      db.collection('solicitudes').where('fecha','>=',desde).get()
+    ]);
+    const prods=invSnap.docs.map(d=>d.data());
+    const movs=movSnap.docs.map(d=>d.data());
+    const sols=solSnap.docs.map(d=>d.data());
+    let txt=`${'═'.repeat(36)}\n🏨 Hyde House Hotel\n📍 4111 South Ocean Drive, Hollywood FL\n📊 Reporte ${periodo.toUpperCase()}\n📅 ${new Date().toLocaleDateString('es-ES')}\n${'═'.repeat(36)}\n\n`;
+    txt+=`INVENTARIO (${prods.length} productos):\n${'─'.repeat(36)}\n`;
+    let total=0;
+    prods.forEach(p=>{
+      const f=calcFin(p),s=pst(p);
+      const ico=s==='ok'?'✅':s==='bajo'?'⚠️':'🔴';
+      const val=f*(p.precio||0);total+=val;
+      txt+=`${ico} ${(p.nombre||'').substring(0,24).padEnd(24)} ${String(f).padStart(5)} ${(p.unidad||'ud').padEnd(6)} mín:${p.minimo||0}`;
+      if(val>0) txt+=` $${val.toFixed(0)}`;
+      txt+='\n';
+    });
+    txt+=`\n${'─'.repeat(36)}\nValor total: $${total.toFixed(2)}\n`;
+    txt+=`\nSOLICITUDES (${sols.length}):\n${'─'.repeat(36)}\n`;
+    const byEst={};sols.forEach(s=>{byEst[s.estado]=(byEst[s.estado]||0)+1;});
+    Object.entries(byEst).forEach(([e,c])=>{ txt+=`${ESTADOS[e]?.l||e}: ${c}\n`; });
+    txt+=`\nMOVIMIENTOS (${movs.length}):\n${'─'.repeat(36)}\n`;
+    const byTipo={};movs.forEach(m=>{byTipo[m.tipo]=(byTipo[m.tipo]||0)+m.qty;});
+    Object.entries(byTipo).forEach(([t,q])=>{ txt+=`${t}: ${q} ud\n`; });
+    txt+=`\n${'═'.repeat(36)}`;
+    ultimoReporteTxt=txt;
+    const pre=document.getElementById('rep-txt');
+    if(pre){pre.textContent=txt;document.getElementById('rep-preview').style.display='block';}
+    toast(`📊 Reporte ${periodo} generado`);
+  } catch(e){ toast('❌ '+e.message); }
+}
+function enviarReporteWA(){ if(!ultimoReporteTxt){genReporte('diario');return;} abrirWA('almacenero',ultimoReporteTxt.slice(0,3900)); }
+function exportarCSV(){
+  let csv='SKU,Nombre,Categoría,Unidad,Exist.Inicial,Entradas,Salidas,Exist.Final,Mínimo,Precio,Proveedor,Estado\n';
+  INVENTARIO.forEach(p=>{
+    csv+=`"${p.sku||''}","${p.nombre||''}","${p.categoria||''}","${p.unidad||''}",${p.existenciaInicial||0},${p.entradas||0},${p.salidas||0},${calcFin(p)},${p.minimo||0},${p.precio||0},"${p.proveedor||''}","${pst(p)}"\n`;
+  });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download=`HKPro_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();toast('📑 CSV descargado');
+}
+
+// ══ WHATSAPP ══════════════════════════════════════
+function abrirWAModal(){
+  abrirModal('modal-wa');
+  document.getElementById('wa-alm').value=WA.almacenero||'';
+  document.getElementById('wa-sup').value=WA.supervisor||'';
+  document.getElementById('wa-adm').value=WA.admin||'';
+  document.getElementById('wa-grp').value=WA.grupoLink||'';
+}
+async function guardarWA(){
+  if(ROLES[CU.rol]<4){ toast('⚠️ Solo admin puede modificar contactos WA'); return; }
+  WA.almacenero=(document.getElementById('wa-alm').value||'').trim();
+  WA.supervisor=(document.getElementById('wa-sup').value||'').trim();
+  WA.admin=(document.getElementById('wa-adm').value||'').trim();
+  WA.grupoLink=(document.getElementById('wa-grp').value||'').trim();
+  try {
+    await db.collection('settings').doc('whatsapp').set({
+      ...WA, updatedAt:firebase.firestore.FieldValue.serverTimestamp(), updatedBy:CU.uid
+    });
+    cerrarModal('modal-wa');
+    renderWALista();
+    toast('✅ Contactos guardados de forma segura');
+  } catch(e){ toast('❌ '+e.message); }
+}
+function renderWALista(){
+  const el=document.getElementById('lista-wa');if(!el)return;
+  const items=[
+    {l:'📦 Almacenero',   v:WA.almacenero},
+    {l:'👔 Supervisor',    v:WA.supervisor},
+    {l:'🏨 Admin',         v:WA.admin},
+    {l:'💬 Grupo HK',     v:WA.grupoLink},
+  ];
+  el.innerHTML=items.map(it=>`<div class="set-row">
+    <div class="set-ico">${it.l.split(' ')[0]}</div>
+    <div class="set-bod">
+      <div class="set-nom">${it.l.slice(3)}</div>
+      <div class="set-sub">${it.v?'••'+it.v.slice(-4):'<span style="color:var(--r)">No configurado</span>'}</div>
+    </div>
+  </div>`).join('');
+}
+function waURL(target,texto){
+  let tel=WA[target]||'';
+  if(target==='grupo'){
+    const v=(WA.grupoLink||'').trim();
+    if(!v){toast('⚠️ Configura el grupo');return null;}
+    if(v.startsWith('http'))return v;
+    tel=v;
+  }
+  tel=(tel||'').replace(/[\s\-().]/g,'');
+  if(!tel){toast('⚠️ Número no configurado');return null;}
+  return'https://wa.me/'+tel.replace(/^\+/,'')+(texto?'?text='+encodeURIComponent(texto):'');
+}
+function abrirWA(target,texto){ const url=waURL(target,texto);if(url)window.open(url,'_blank'); }
+
+// ══ ADMIN: CREAR USUARIO ══════════════════════════
+async function crearUsuario(){
+  if(ROLES[CU.rol]<4){ toast('⚠️ Solo admin'); return; }
+  const email=document.getElementById('new-email').value.trim();
+  const nombre=document.getElementById('new-nombre').value.trim();
+  const pass=document.getElementById('new-pass').value;
+  const rol=document.getElementById('new-rol').value;
+  if(!email||!nombre||!pass){ toast('⚠️ Completa todos los campos'); return; }
+  if(pass.length<8){ toast('⚠️ Contraseña mínimo 8 caracteres'); return; }
+  try {
+    const crearFn=functions.httpsCallable('crearUsuario');
+    await crearFn({email,password:pass,nombre,rol});
+    toast('✅ Usuario creado correctamente');
+    ['new-email','new-nombre','new-pass'].forEach(id=>document.getElementById(id).value='');
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+// ══ HOTEL CONFIG ══════════════════════════════════
+function guardarHotel(){
+  CFG.hotelNombre=document.getElementById('h-nombre').value||'Hyde House Hotel';
+  CFG.pisos=parseInt(document.getElementById('h-pisos').value)||41;
+  CFG.hxp=parseInt(document.getElementById('h-hxp').value)||10;
+  CFG.suites=(document.getElementById('h-suites').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+  CFG.areas=(document.getElementById('h-areas').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+  try { localStorage.setItem('hk_cfg',JSON.stringify(CFG)); } catch(e){}
+  construirHabs();
+  toast('✅ Configuración guardada');
+}
+
+// ══ QR ════════════════════════════════════════════
+function generarQR(){
+  const url=window.location.href.split('?')[0];
+  const el=document.getElementById('qr-url-text');
+  if(el) el.textContent=url;
+  setTimeout(()=>{
+    const canvas=document.getElementById('qr-canvas');
+    if(canvas&&typeof QRCode!=='undefined'){
+      QRCode.toCanvas(canvas,url,{width:200,margin:2,color:{dark:'#0f172a',light:'#ffffff'}},()=>{});
+    }
+  },500);
+}
+
+// ══ PERFIL INFO ═══════════════════════════════════
+function renderPerfilInfo(){
+  const rl={housekeeper:'🧹 Camarera',almacenero:'📦 Almacenero',supervisor:'👔 Supervisor',admin:'⚙️ Admin'};
+  const el=document.getElementById('perfil-info');if(!el)return;
+  el.innerHTML=`
+    <div class="set-row"><div class="set-ico">${(rl[CU.rol]||'👤').split(' ')[0]}</div><div class="set-bod"><div class="set-nom">${CU.nombre}</div><div class="set-sub">${CU.email}<br><strong>${rl[CU.rol]||CU.rol}</strong></div></div></div>
+    <div class="set-row"><div class="set-ico">🏨</div><div class="set-bod"><div class="set-nom">Hyde House Hotel</div><div class="set-sub">4111 South Ocean Drive · Hollywood, Florida</div></div></div>
+  `;
+}
+
+// ══ NAVEGACIÓN ════════════════════════════════════
+function irA(p){
+  ['hk','sol','alm','sup','chat','cfg'].forEach(x=>{
+    document.getElementById('p-'+x)?.classList.toggle('activo',x===p);
+    document.getElementById('nb-'+x)?.classList.toggle('activo',x===p);
+  });
+  if(p==='alm'){swAlm('inv');renderKardex();}
+  if(p==='sup'){
+    document.getElementById('sup-fecha').value=new Date().toISOString().slice(0,10);
+    document.getElementById('reg-fecha').value=new Date().toISOString().slice(0,10);
+    swSup('habs');cargarHabsListas();cargarIncidencias();
+  }
+  if(p==='cfg') swCfg('perfil');
+  if(p==='chat') cambiarCanal(canalActivo);
+}
+function swAlm(t){
+  ['inv','kar','ent','exp'].forEach(x=>{
+    const el=document.getElementById('sp-'+x);if(el)el.style.display=x===t?'block':'none';
+    const tab=document.getElementById('st-'+x);if(tab)tab.classList.toggle('activo',x===t);
+  });
+  if(t==='kar') renderKardex();
+}
+function swSup(t){
+  ['habs','inc','reg'].forEach(x=>{
+    const el=document.getElementById('sup-'+x);if(el)el.style.display=x===t?'block':'none';
+    const tab=document.getElementById('ss-'+x);if(tab)tab.classList.toggle('activo',x===t);
+  });
+  if(t==='inc') cargarIncidencias();
+  if(t==='reg') cargarRegistroDiario();
+}
+function swCfg(t){
+  ['perfil','wa','hotel','qr','admin'].forEach(x=>{
+    const el=document.getElementById('cfg-'+x);if(el)el.style.display=x===t?'block':'none';
+    const tab=document.getElementById('sc-'+x+'-tab')||document.getElementById('sc-'+x);
+    if(tab)tab.classList.toggle('activo',x===t);
+  });
+  if(t==='wa') renderWALista();
+  if(t==='qr') generarQR();
+  if(t==='hotel'){
+    document.getElementById('h-nombre').value=CFG.hotelNombre||'Hyde House Hotel';
+    document.getElementById('h-pisos').value=CFG.pisos||41;
+    document.getElementById('h-hxp').value=CFG.hxp||10;
+    document.getElementById('h-suites').value=(CFG.suites||[]).join(', ');
+    document.getElementById('h-areas').value=(CFG.areas||[]).join(', ');
+  }
+}
+
+// ══ MODAL ══════════════════════════════════════════
+function abrirModal(id){ document.getElementById(id)?.classList.remove('oculto'); }
+function cerrarModal(id){ document.getElementById(id)?.classList.add('oculto'); }
+document.querySelectorAll('.overlay').forEach(el=>{
+  el.addEventListener('click',e=>{ if(e.target===el) el.classList.add('oculto'); });
+});
+
+// ══ UTILS ══════════════════════════════════════════
+function setConn(ok){
+  const d=document.getElementById('cdot'),l=document.getElementById('clbl');
+  if(d) d.className='cdot'+(ok?' ok':'');
+  if(l) l.textContent=ok?'🔥 Firestore':'Local';
+}
+function _s(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function _dot(id,show){const e=document.getElementById(id);if(e)show?e.classList.add('show'):e.classList.remove('show');}
+function tick(){document.getElementById('clk').textContent=new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+function toast(msg,dur=2400){
+  const el=document.getElementById('toast');if(!el)return;
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),dur);
+}
+
+// ══ SERVICE WORKER ══════════════════════════════════
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone){
+  setTimeout(()=>toast('📲 Safari → Compartir → Añadir a pantalla de inicio',6000),12000);
+}
+
+// Keydown Enter en login
+document.getElementById('l-pass').addEventListener('keydown',e=>{if(e.key==='Enter')hacerLogin();});
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function auth()        { return request.auth != null; }
+    function uid()         { return request.auth.uid; }
+    function rol()         { return get(/databases/$(database)/documents/usuarios/$(uid())).data.rol; }
+    function esAdmin()     { return auth() && rol() == 'admin'; }
+    function esSup()       { return auth() && rol() in ['admin','supervisor']; }
+    function esAlm()       { return auth() && rol() in ['admin','supervisor','almacenero']; }
+    function esHK()        { return auth() && rol() in ['admin','supervisor','almacenero','housekeeper']; }
+
+    match /usuarios/{id} {
+      allow read:   if auth() && (uid()==id || esSup());
+      allow create: if esAdmin();
+      allow update: if esAdmin() || uid()==id;
+      allow delete: if esAdmin();
+    }
+    match /solicitudes/{id} {
+      allow read:   if auth();
+      allow create: if auth() && request.resource.data.uidUsuario==uid();
+      allow update: if esSup() || (auth() && resource.data.uidUsuario==uid() && resource.data.estado=='pending');
+      allow delete: if esAdmin();
+    }
+    match /inventario/{id} {
+      allow read:   if auth();
+      allow create: if esAlm();
+      allow update: if esAlm() || (auth() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['salidas','updatedAt','updatedBy']));
+      allow delete: if esSup();
+    }
+    match /movimientos/{id} {
+      allow read:   if esAlm();
+      allow create: if auth();
+      allow update, delete: if esAdmin();
+    }
+    match /habitaciones_listas/{id} {
+      allow read:   if auth() && (resource.data.uidUsuario==uid() || esSup());
+      allow create: if auth() && request.resource.data.uidUsuario==uid();
+      allow update: if auth() && resource.data.uidUsuario==uid() && resource.data.cerrado!=true;
+      allow delete: if esAdmin();
+    }
+    match /incidencias/{id} {
+      allow read:   if auth() && (resource.data.uidUsuario==uid() || esSup());
+      allow create: if auth() && request.resource.data.uidUsuario==uid();
+      allow update: if esSup();
+      allow delete: if esAdmin();
+    }
+    match /registro_diario/{id} {
+      allow read:   if esSup() || (auth() && resource.data.uidUsuario==uid());
+      allow create: if auth();
+      allow update: if esSup();
+      allow delete: if esAdmin();
+    }
+    match /chat/{id} {
+      allow read, create: if auth();
+      allow delete: if esSup();
+    }
+    match /settings/{doc} {
+      allow read, write: if esAdmin();
+    }
+    match /reportes_diarios/{id} { allow read: if esAlm(); allow write: if false; }
+    match /audit_logs/{id}       { allow read: if esAdmin(); allow write: if false; }
+    match /wa_logs/{id}          { allow read: if esAdmin(); allow write: if false; }
+    match /{doc=**}              { allow read, write: if false; }
+  }
+}
