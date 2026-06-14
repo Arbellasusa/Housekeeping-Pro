@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Supplies Request">
+<title>Hotel Supplies Request - Hyde House</title>
+<style>
+/* -- RESET -- */
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,sans-serif;background:#eef2f7;min-height:100vh;padding:14px 14px 48px;}
+
+/* -- HEADER -- */
+.hdr{background:linear-gradient(135deg,#0a2040 0%,#0f3460 60%,#1a4a80 100%);border-radius:16px;padding:18px 20px;margin-bottom:12px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 16px rgba(15,52,96,0.35);}
+.hdr-icon{font-size:34px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));}
+.hdr-text{flex:1;}
+.hdr-text .hotel{color:#fff;font-size:19px;font-weight:800;letter-spacing:0.3px;text-shadow:0 1px 3px rgba(0,0,0,0.2);}
+.hdr-text .dept{color:#93c5fd;font-size:13px;font-weight:500;margin-top:3px;letter-spacing:0.5px;text-transform:uppercase;}
+.hdr-clock{text-align:right;}
+.hdr-clock .dt{color:#bfdbfe;font-size:11px;font-weight:600;letter-spacing:0.3px;}
+.hdr-clock .tm{color:#fff;font-size:22px;font-weight:800;letter-spacing:1px;margin-top:2px;}
+
+/* -- LANG TOGGLE -- */
+.lang-row{display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;}
+.lang-btn{border:1.5px solid #cbd5e1;border-radius:20px;padding:5px 16px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;color:#64748b;transition:all .15s;}
+.lang-btn.active{background:#0f3460;color:#fff;border-color:#0f3460;}
+
+/* -- HOTEL PHOTO -- */
+.hotel-photo{border:2px dashed #cbd5e1;border-radius:14px;height:160px;background:#f8fafc;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.06);-webkit-tap-highlight-color:rgba(0,0,0,0);}
+.hotel-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:12px;}
+.hotel-photo input[type=file]{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px;-webkit-appearance:none;z-index:999;}
+.hotel-photo-ph{text-align:center;pointer-events:none;}
+
+/* -- CARDS -- */
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.07);}
+.card-label{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px;}
+
+/* -- TYPE TOGGLE -- */
+.type-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.type-btn{border:2px solid #e2e8f0;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;background:#f8fafc;color:#64748b;text-align:center;transition:all .15s;}
+.type-btn.hk-on{border-color:#0f3460;background:#eff6ff;color:#0f3460;}
+.type-btn.guest-on{border-color:#b45309;background:#fffbeb;color:#92400e;}
+
+/* -- DETAIL INPUTS -- */
+.det-input{width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:13px 14px;font-size:16px;color:#0a1628;background:#fff;outline:none;-webkit-appearance:none;margin-bottom:10px;font-weight:500;}
+.det-input:focus{border-color:#0f3460;box-shadow:0 0 0 3px rgba(15,52,96,0.08);}
+.det-input:last-child{margin-bottom:0;}
+
+/* -- SEARCH BOX -- */
+.srch-wrap{position:relative;margin-bottom:12px;}
+.srch-wrap input{width:100%;border:2px solid #cbd5e1;border-radius:12px;padding:13px 42px 13px 44px;font-size:15px;color:#0a1628;background:#fff;outline:none;-webkit-appearance:none;font-weight:500;}
+.srch-wrap input:focus{border-color:#0f3460;box-shadow:0 0 0 3px rgba(15,52,96,0.08);}
+.srch-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:20px;pointer-events:none;}
+.srch-clear{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:#e2e8f0;border:none;border-radius:50%;width:22px;height:22px;font-size:13px;cursor:pointer;display:none;align-items:center;justify-content:center;color:#475569;}
+.srch-clear.show{display:flex;}
+.suggestions{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid #cbd5e1;border-radius:12px;max-height:280px;overflow-y:auto;z-index:100;display:none;box-shadow:0 8px 24px rgba(0,0,0,0.12);}
+.suggestions.open{display:block;}
+.sug-item{padding:11px 14px;font-size:14px;color:#1e293b;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #f1f5f9;transition:background .1s;}
+.sug-item:last-child{border-bottom:none;}
+.sug-item:active{background:#eff6ff;}
+.sug-name{flex:1;font-weight:500;}
+.sug-cat{font-size:11px;color:#94a3b8;margin-left:8px;flex-shrink:0;}
+.sug-badge{border-radius:20px;padding:3px 11px;font-size:12px;font-weight:700;min-width:34px;text-align:center;background:#0f3460;color:#fff;}
+.sug-badge.has{background:#059669;}
+.sug-empty{padding:16px;font-size:14px;color:#94a3b8;text-align:center;}
+
+/* -- SELECTED ITEMS LIST -- */
+.selected-section{margin-top:4px;}
+.selected-title{font-size:12px;font-weight:700;color:#0f3460;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;padding-top:4px;border-top:1.5px solid #e2e8f0;}
+.sel-empty{font-size:13px;color:#94a3b8;padding:6px 0 2px;font-style:italic;}
+.sel-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #f1f5f9;}
+.sel-item:last-child{border-bottom:none;}
+.sel-qty-ctrl{display:flex;align-items:center;gap:8px;}
+.sel-qty-btn{width:28px;height:28px;border-radius:50%;border:none;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sel-minus{background:#fee2e2;color:#dc2626;}
+.sel-plus{background:#dbeafe;color:#1d4ed8;}
+.sel-num{font-size:15px;font-weight:800;min-width:22px;text-align:center;color:#0f3460;}
+.sel-name{font-size:14px;font-weight:600;color:#0a1628;flex:1;}
+.sel-cat-tag{font-size:10px;color:#64748b;background:#f1f5f9;border-radius:6px;padding:2px 6px;flex-shrink:0;}
+.sel-remove{background:none;border:none;color:#dc2626;font-size:18px;cursor:pointer;padding:0 2px;flex-shrink:0;}
+
+/* -- CUSTOM ITEM -- */
+.custom-row{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1.5px solid #e2e8f0;}
+.custom-row input{flex:1;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:15px;color:#0a1628;outline:none;-webkit-appearance:none;background:#fff;}
+.custom-row input:focus{border-color:#0f3460;}
+.custom-add-btn{background:#0f3460;border:none;border-radius:10px;color:#fff;font-size:22px;font-weight:700;width:46px;min-width:46px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+/* -- PHOTOS -- */
+.photos-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:8px;}
+.photo-item{position:relative;border:1.5px dashed #d1d5db;border-radius:12px;height:100px;background:#f9fafb;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.photo-item img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:10px;}
+.photo-item input[type=file]{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;font-size:16px;z-index:5;}
+.photo-item .num{position:absolute;top:4px;left:4px;width:20px;height:20px;background:rgba(15,52,96,.85);border-radius:50%;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:6;}
+.rm-btn{position:absolute;top:4px;right:4px;width:24px;height:24px;background:rgba(220,38,38,.88);border:none;border-radius:50%;color:#fff;font-size:16px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;padding:0;}
+.photo-req{font-size:12px;color:#dc2626;font-weight:700;margin-bottom:8px;display:none;}
+.photo-req.show{display:block;}
+.add-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.add-btn{border:2px dashed #0f3460;border-radius:12px;height:72px;background:#eff6ff;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#0f3460;font-size:12px;font-weight:700;gap:4px;position:relative;overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);}
+.add-btn input[type=file]{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px;-webkit-appearance:none;z-index:999;}
+.add-btn-icon{font-size:22px;pointer-events:none;position:relative;z-index:1;}
+.add-btn span{pointer-events:none;position:relative;z-index:1;}
+
+/* -- BUTTONS -- */
+.btn{width:100%;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-wa{background:#1DAA61;color:#fff;}
+.btn-dl{background:#0f3460;color:#fff;}
+.msg{font-size:13px;color:#64748b;text-align:center;padding:8px;min-height:36px;}
+.msg.error{color:#dc2626;font-weight:700;}
+.msg.ok{color:#1DAA61;font-weight:700;}
+canvas{display:none;}
+</style>
+</head>
+<body>
+
+<!-- == HEADER == -->
+<div class="hdr">
+  <div class="hdr-icon">🏨</div>
+  <div class="hdr-text">
+    <div class="hotel">Hyde House Hotel</div>
+    <div class="dept">Hotel Supplies Request</div>
+  </div>
+  <div class="hdr-clock">
+    <div class="dt" id="clock-date"></div>
+    <div class="tm" id="clock-time"></div>
+  </div>
+</div>
+
+<!-- == LANGUAGE == -->
+<div class="lang-row">
+  <button class="lang-btn active" id="lang-en" onclick="setLang('en')">🇺🇸 EN</button>
+  <button class="lang-btn" id="lang-es" onclick="setLang('es')">🇪🇸 ES</button>
+</div>
+
+<!-- == HOTEL PHOTO == -->
+<div class="hotel-photo" id="zone-main">
+  <input type="file" id="input-main" accept="image/*">
+  <div class="hotel-photo-ph" id="ph-main" style="pointer-events:none;position:relative;z-index:1;">
+    <div style="font-size:32px;margin-bottom:6px;">🏨</div>
+    <div style="font-size:13px;color:#9ca3af;">Tap to add hotel photo</div>
+  </div>
+</div>
+    <div style="font-size:13px;color:#9ca3af;">Tap to add hotel photo</div>
+  </div>
+</div>
+
+<!-- == REQUESTER == -->
+<div class="card">
+  <div class="card-label">Requested by</div>
+  <div class="type-row">
+    <div class="type-btn hk-on" id="btn-hk" onclick="setType('hk')">🧹 Housekeeping</div>
+    <div class="type-btn" id="btn-guest" onclick="setType('guest')">🛎️ Guest</div>
+  </div>
+  <input class="det-input" id="input-name" placeholder="Name" type="text">
+  <input class="det-input" id="input-room" placeholder="Room number" type="text" inputmode="numeric">
+</div>
+
+<!-- == SUPPLIES == -->
+<div class="card">
+  <div class="card-label">Select supplies &amp; quantities</div>
+
+  <!-- Search -->
+  <div class="srch-wrap" id="srch-wrap">
+    <span class="srch-icon">🔍</span>
+    <input type="text" id="search-input" placeholder="Search supplies..." autocomplete="off"
+      oninput="onSearch(this.value)" onfocus="onSearch(this.value)">
+    <button class="srch-clear" id="srch-clear" onclick="clearSearch()">✕</button>
+    <div class="suggestions" id="suggestions"></div>
+  </div>
+
+  <!-- Selected items list -->
+  <div class="selected-section">
+    <div class="selected-title" id="sel-title">Selected Items (0)</div>
+    <div id="selected-list"><div class="sel-empty" id="sel-empty">No items selected yet - search above to add</div></div>
+  </div>
+
+  <!-- Custom item -->
+  <div class="custom-row">
+    <input type="text" id="custom-input" placeholder="Add custom item...">
+    <button class="custom-add-btn" onclick="addCustomItem()">+</button>
+  </div>
+</div>
+
+<!-- == PHOTOS == -->
+<div class="card">
+  <div class="card-label">Photos (required)</div>
+  <div class="photo-req" id="photo-required">⚠️ At least one photo is required</div>
+  <div class="photos-grid" id="photos-grid"></div>
+  <div class="add-row">
+    <div class="add-btn">
+      <input type="file" accept="image/*" id="add-gallery">
+      <div class="add-btn-icon">🖼️</div>
+      <span>Gallery</span>
+    </div>
+    <div class="add-btn">
+      <input type="file" accept="image/*" capture="environment" id="add-camera">
+      <div class="add-btn-icon">📷</div>
+      <span>Camera</span>
+    </div>
+  </div>
+</div>
+
+<button class="btn btn-wa" onclick="generarReporte('share')">📤 Generate &amp; Share on WhatsApp</button>
+<button class="btn btn-dl" onclick="generarReporte('download')">⬇️ Download report</button>
+<div class="msg" id="msg"></div>
+<canvas id="canvas-out"></canvas>
+
+<script>
+// ==========================================
+//  PRODUCTS DATA (kept as declared above)
+// ==========================================
+var PRODUCTS = {
+  bedding: [
+    'King Sheets Set','Queen Sheets Set','Full Sheets Set','Twin Sheets Set',
+    'King Pillowcases','Queen Pillowcases','King Duvet Cover','Queen Duvet Cover',
+    'Mattress Pad','Blanket','Extra Pillow','Pillow Protector',
+    'Bed Skirt','Decorative Pillow Cover','Sofa Bed Sheets'
+  ],
+  towels: [
+    'Bath Towel (Large)','Hand Towel (Medium)','Face Towel (Small)',
+    'Bath Mat / Floor Towel','Pool Towel','Spa Towel',
+    'Kids Towel','Extra Bath Towel Set'
+  ],
+  toiletries: [
+    'Shampoo','Conditioner','Body Wash','Bar Soap','Body Lotion',
+    'Shower Cap','Dental Kit (Toothbrush + Paste)','Shaving Kit',
+    'Cotton Balls','Cotton Swabs / Q-Tips','Makeup Remover Pads',
+    'Nail File','Sewing Kit','Shoe Polish Kit','Vanity Kit',
+    'Mouthwash','Facial Cleanser','Hand Sanitizer','Feminine Hygiene Kit',
+    'Sunscreen Lotion','Comb / Brush Kit'
+  ],
+  room: [
+    'Toilet Paper Roll','Toilet Paper (Extra Pack)','Tissue Box',
+    'Trash Bag (Small)','Trash Bag (Large)','Recycling Bag',
+    'Coffee Kit (Regular)','Coffee Kit (Decaf)','Tea Bag Assortment',
+    'Sugar / Sweetener Pack','Creamer Pack','Water Bottles (Still)',
+    'Water Bottles (Sparkling)','Plastic Cups','Paper Cups',
+    'Hangers (Regular)','Hangers (Clip / Skirt)','Laundry Bag',
+    'Laundry Detergent Packet','Iron & Ironing Board',
+    'Do Not Disturb Sign','Luggage Rack','Safe Battery',
+    'TV Remote Battery','Alarm Clock Battery','Light Bulb (Standard)',
+    'Light Bulb (Nightlight)','Extension Cord / Power Strip',
+    'Ice Bucket','Ice Bucket Liner','Room Service Menu',
+    'Hotel Directory / Compendium','Notepad & Pen','Stationery Set',
+    'Envelopes','Postcards','Welcome Card',
+    'Extra Key Card','Parking Pass'
+  ],
+  kitchen: [
+    'Plates','Bowls','Mugs','Glasses (Water)','Glasses (Wine)',
+    'Cutlery Set (Fork/Knife/Spoon)','Napkins (Paper)','Napkins (Cloth)',
+    'Dish Soap','Sponge / Scrubber','Dish Towel',
+    'Plastic Wrap / Cling Film','Aluminum Foil','Zip Lock Bags',
+    'Microwave-Safe Container','Cutting Board','Can Opener','Bottle Opener',
+    'Coffee Filter','Coffee Pods (Standard)','Coffee Pods (Decaf)'
+  ],
+  cleaning: [
+    'All-Purpose Cleaner','Bathroom Cleaner','Glass Cleaner',
+    'Disinfectant Spray','Disinfectant Wipes','Mold & Mildew Remover',
+    'Floor Cleaner','Carpet Stain Remover','Fabric Freshener / Febreze',
+    'Air Freshener Spray','Air Freshener Plug-In','Rubber Gloves',
+    'Microfiber Cloth','Scrub Brush','Toilet Brush','Toilet Bowl Cleaner',
+    'Mop Head Replacement','Vacuum Bag / Filter',
+    'Trash Can Liners (Small)','Trash Can Liners (Large)'
+  ],
+  maintenance: [
+    'AA Batteries','AAA Batteries','9V Battery',
+    'Duct Tape','Masking Tape','Super Glue',
+    'Picture Hook / Nail','Door Stopper','Door Hanger Hook',
+    'Shower Curtain Rings','Shower Curtain Liner','Drain Hair Catcher',
+    'Toilet Seat Cover (Disposable)','Plunger','Unclogger / Drain Cleaner',
+    'Zip Ties','Cable Ties','Furniture Touch-Up Marker',
+    'WD-40 Lubricant','Silicone Caulk'
+  ],
+  outdoor: [
+    'Pool Towel','Beach Towel','Beach Bag',
+    'Sunscreen SPF 30','Sunscreen SPF 50','Aloe Vera Gel',
+    'Bug Repellent Spray','Umbrella (Patio)','Umbrella (Personal)',
+    'Pool Float','Pool Noodle','Life Vest (Child)',
+    'Outdoor Chair Cushion','Tiki Torch / Citronella Candle',
+    'BBQ Charcoal','BBQ Lighter','Outdoor Trash Bag'
+  ]
+};
+
+// ==========================================
+//  PRODUCTS DATA (ES)
+// ==========================================
+var PRODUCTS_ES = {
+  bedding: [
+    'Sábanas King','Sábanas Queen','Sábanas Full','Sábanas Twin',
+    'Fundas King','Fundas Queen','Funda Edredón King','Funda Edredón Queen',
+    'Protector de Colchón','Manta','Almohada Extra','Protector de Almohada',
+    'Falda de Cama','Funda Almohada Decorativa','Sábanas Sofá Cama'
+  ],
+  towels: [
+    'Toalla de Baño (Grande)','Toalla de Mano (Mediana)','Toalla de Cara (Pequeña)',
+    'Alfombra de Baño / Toalla de Pies','Toalla de Piscina','Toalla de Spa',
+    'Toalla Infantil','Set Extra de Toallas de Baño'
+  ],
+  toiletries: [
+    'Champú','Acondicionador','Gel de Baño','Jabón en Barra','Loción Corporal',
+    'Gorro de Ducha','Kit Dental (Cepillo + Pasta)','Kit de Afeitado',
+    'Bolitas de Algodón','Hisopos / Q-Tips','Removedor de Maquillaje',
+    'Lima de Uñas','Kit de Costura','Kit de Betún para Zapatos','Kit de Tocador',
+    'Enjuague Bucal','Limpiador Facial','Desinfectante de Manos','Kit de Higiene Femenina',
+    'Protector Solar','Kit de Peine / Cepillo'
+  ],
+  room: [
+    'Rollo de Papel Higiénico','Paquete Extra de Papel Higiénico','Caja de Pañuelos',
+    'Bolsa de Basura (Pequeña)','Bolsa de Basura (Grande)','Bolsa de Reciclaje',
+    'Kit de Café (Regular)','Kit de Café (Descafeinado)','Surtido de Té',
+    'Paquete de Azúcar / Edulcorante','Paquete de Crema','Botellas de Agua (Sin Gas)',
+    'Botellas de Agua (Con Gas)','Vasos Plásticos','Vasos de Papel',
+    'Ganchos (Regular)','Ganchos (Pinza / Falda)','Bolsa de Lavandería',
+    'Paquete de Detergente','Plancha y Tabla de Planchar',
+    'Letrero No Molestar','Portamaletas','Batería de Caja Fuerte',
+    'Batería Control TV','Batería Reloj Despertador','Bombilla (Estándar)',
+    'Bombilla (Nocturna)','Regleta / Extensión Eléctrica',
+    'Cubo de Hielo','Forro para Cubo de Hielo','Menú de Servicio a Habitación',
+    'Directorio del Hotel','Bloc de Notas y Bolígrafo','Set de Papelería',
+    'Sobres','Postales','Tarjeta de Bienvenida',
+    'Tarjeta Llave Extra','Pase de Estacionamiento'
+  ],
+  kitchen: [
+    'Platos','Tazones','Tazas','Vasos (Agua)','Copas (Vino)',
+    'Set de Cubiertos (Tenedor/Cuchillo/Cuchara)','Servilletas (Papel)','Servilletas (Tela)',
+    'Jabón para Platos','Esponja / Estropajo','Paño de Cocina',
+    'Film Plástico','Papel de Aluminio','Bolsas Zip Lock',
+    'Recipiente Apto para Microondas','Tabla de Cortar','Abrelatas','Abrebotellas',
+    'Filtro de Café','Cápsulas de Café (Regular)','Cápsulas de Café (Descafeinado)'
+  ],
+  cleaning: [
+    'Limpiador Multiusos','Limpiador de Baño','Limpiador de Vidrios',
+    'Spray Desinfectante','Toallitas Desinfectantes','Removedor de Moho y Hongos',
+    'Limpiador de Pisos','Removedor de Manchas de Alfombra','Ambientador / Febreze',
+    'Spray Ambientador','Ambientador Eléctrico','Guantes de Goma',
+    'Paño de Microfibra','Cepillo de Fregar','Escobilla de Baño','Limpiador de Inodoro',
+    'Repuesto de Mopa','Bolsa / Filtro de Aspiradora',
+    'Bolsas para Papelera (Pequeña)','Bolsas para Papelera (Grande)'
+  ],
+  maintenance: [
+    'Pilas AA','Pilas AAA','Pila 9V',
+    'Cinta Adhesiva','Cinta de Pintor','Pegamento Instantáneo',
+    'Gancho / Clavo para Cuadro','Tope de Puerta','Gancho para Puerta',
+    'Anillas para Cortina de Ducha','Forro de Cortina de Ducha','Atrapa-Pelos para Desagüe',
+    'Tapa de Inodoro (Desechable)','Desatascador','Desobstructor de Desagüe',
+    'Bridas de Plástico','Pasacables','Rotulador Toca-Todo para Muebles',
+    'WD-40 Lubricante','Sellador de Silicona'
+  ],
+  outdoor: [
+    'Toalla de Piscina','Toalla de Playa','Bolsa de Playa',
+    'Protector Solar FPS 30','Protector Solar FPS 50','Gel de Aloe Vera',
+    'Repelente de Insectos','Sombrilla (Patio)','Sombrilla (Personal)',
+    'Flotador de Piscina','Churro de Piscina','Chaleco Salvavidas (Infantil)',
+    'Cojín para Silla Exterior','Antorcha Tiki / Vela de Citronela',
+    'Carbón para Parrilla','Encendedor para Parrilla','Bolsa de Basura Exterior'
+  ]
+};
+
+var CAT_LABELS = {
+  bedding:'Bedding', towels:'Towels', toiletries:'Toiletries',
+  room:'Room Essentials', kitchen:'Kitchen & Dining',
+  cleaning:'Cleaning Supplies', maintenance:'Maintenance', outdoor:'Outdoor & Pool'
+};
+var CAT_LABELS_ES = {
+  bedding:'Ropa de Cama', towels:'Toallas', toiletries:'Articulos de Tocador',
+  room:'Esenciales de Habitacion', kitchen:'Cocina y Comedor',
+  cleaning:'Productos de Limpieza', maintenance:'Mantenimiento', outdoor:'Exterior y Piscina'
+};
+
+// ==========================================
+//  KEYWORD CLASSIFIER
+//  Maps search terms (EN+ES) to categories
+// ==========================================
+var KW = {
+  bedding: [
+    'sheet','sheets','sabana','sabanas','pillow','pillowcase','funda','blanket','manta',
+    'duvet','comforter','mattress','colchon','bed skirt','bedspread','quilt','linen',
+    'king','queen','twin','full size bed','sofa bed'
+  ],
+  towels: [
+    'towel','toalla','washcloth','bath mat','floor mat','hand towel','face towel',
+    'pool towel','spa towel','rag','paño'
+  ],
+  toiletries: [
+    'shampoo','champu','conditioner','acondicionador','body wash','gel de baño',
+    'soap','jabon','lotion','locion','cream','crema','shower cap','dental','toothbrush',
+    'toothpaste','pasta','shaving','razor','cotton','cotton ball','swab','q-tip','hisopos',
+    'nail file','sewing kit','vanity','mouthwash','enjuague','cleanser','sanitizer',
+    'feminine','sunscreen','protector solar','comb','brush','perfume','deodorant'
+  ],
+  room: [
+    'toilet paper','papel higienico','papel sanitario','tissue','paper towel','papel toalla',
+    'trash bag','bolsa de basura','garbage bag','recycling','coffee','cafe','tea','te',
+    'sugar','azucar','creamer','water bottle','agua','cup','vaso','hanger','gancho',
+    'laundry','lavanderia','iron','plancha','key card','tarjeta','notepad','pen','lapicero',
+    'stationery','envelope','sobre','postcard','welcome card','ice bucket','cubo de hielo',
+    'luggage rack','do not disturb','safe battery'
+  ],
+  kitchen: [
+    'plate','plato','bowl','tazon','mug','taza','glass','vaso','wine','copa',
+    'fork','tenedor','knife','cuchillo','spoon','cuchara','cutlery','cubiertos',
+    'napkin','servilleta','dish soap','jabon platos','sponge','esponja','dish towel',
+    'aluminum foil','papel aluminio','zip lock','microwave','can opener','bottle opener',
+    'coffee filter','coffee pod','capsula'
+  ],
+  cleaning: [
+    'cleaner','limpiador','spray','disinfect','desinfectar','wipe','toallita',
+    'mop','trapeador','broom','escoba','scrub','fregar','air freshener','ambientador',
+    'glove','guante','microfiber','microfibra','toilet brush','escobilla','vacuum',
+    'trash liner','trash can liner','bolsa papelera','black bag','bolsa negra',
+    'clear bag','bolsa transparente','garbage','basura','liner','liners','bag','bags',
+    'trash','black','clear','waste'
+  ],
+  maintenance: [
+    'battery','pila','tape','cinta','glue','pegamento','nail','clavo','hook','gancho',
+    'door stopper','shower curtain','cortina ducha','drain','desague','plunger',
+    'cable tie','zip tie','caulk','silicona','wd-40','lubricant'
+  ],
+  outdoor: [
+    'pool','piscina','beach','playa','sunscreen','protector','float','flotador',
+    'umbrella','sombrilla','bug repellent','repelente','bbq','charcoal','carbon',
+    'aloe','outdoor','exterior'
+  ]
+};
+
+// Smart classifier: returns best category key or null
+function classifyItem(name) {
+  var lo = name.toLowerCase()
+    .replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i')
+    .replace(/[óòö]/g,'o').replace(/[úùü]/g,'u').replace(/ñ/g,'n');
+  var best = null, bestScore = 0;
+  Object.keys(KW).forEach(function(cat) {
+    KW[cat].forEach(function(kw) {
+      if(lo.indexOf(kw) !== -1) {
+        if(kw.length > bestScore) { bestScore = kw.length; best = cat; }
+      }
+    });
+  });
+  return best;
+}
+
+// ==========================================
+//  STATE
+// ==========================================
+// quantities: { 'cat_ProductName': qty }  — catalog items
+// customItems: { 'custom_Name': { qty, cat } }  — session-added items
+var quantities  = {};
+var customItems = {};   // key -> { qty:N, cat:'cleaning', name:'Black trash bags' }
+var slots       = [];
+var requesterType = 'hk';
+var currentLang   = 'en';
+var allItems      = [];  // flat search index rebuilt on demand
+
+// ==========================================
+//  CLOCK
+// ==========================================
+function updateClock() {
+  var d=new Date();
+  var D=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var M=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('clock-date').textContent=D[d.getDay()]+', '+M[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();
+  var h=d.getHours(),m=d.getMinutes(),s=d.getSeconds(),ap=h>=12?'PM':'AM';
+  h=h%12||12;
+  document.getElementById('clock-time').textContent=h+':'+(m<10?'0'+m:m)+':'+(s<10?'0'+s:s)+' '+ap;
+}
+updateClock(); setInterval(updateClock,1000);
+function getTimeStr(){var d=new Date(),h=d.getHours(),m=d.getMinutes(),ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+(m<10?'0'+m:m)+' '+ap;}
+function getFecha(){var d=new Date(),D=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],M=['January','February','March','April','May','June','July','August','September','October','November','December'];return D[d.getDay()]+', '+M[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();}
+
+// ==========================================
+//  LANGUAGE
+// ==========================================
+function setLang(lang) {
+  currentLang=lang;
+  document.getElementById('lang-en').className='lang-btn'+(lang==='en'?' active':'');
+  document.getElementById('lang-es').className='lang-btn'+(lang==='es'?' active':'');
+  document.getElementById('search-input').placeholder=lang==='es'?'Buscar suministros...':'Search supplies...';
+  document.getElementById('custom-input').placeholder=lang==='es'?'Agregar articulo personalizado...':'Add custom item...';
+  buildSearchIndex();
+  renderSelectedList();
+}
+
+// ==========================================
+//  TYPE TOGGLE
+// ==========================================
+function setType(t) {
+  requesterType=t;
+  document.getElementById('btn-hk').className='type-btn'+(t==='hk'?' hk-on':'');
+  document.getElementById('btn-guest').className='type-btn'+(t==='guest'?' guest-on':'');
+  document.getElementById('input-name').placeholder=t==='hk'?'Housekeeper name':'Guest name';
+}
+
+// ==========================================
+//  SEARCH INDEX
+//  Includes both catalog items AND session custom items
+// ==========================================
+function buildSearchIndex() {
+  allItems=[];
+  var useES=currentLang==='es';
+
+  // 1. Catalog items
+  Object.keys(PRODUCTS).forEach(function(cat){
+    var en=PRODUCTS[cat], es=PRODUCTS_ES[cat]||en;
+    en.forEach(function(nameEN,i){
+      var display=useES?(es[i]||nameEN):nameEN;
+      allItems.push({
+        key:cat+'_'+nameEN,
+        name:display,
+        nameEN:nameEN,
+        cat:(useES?CAT_LABELS_ES[cat]:CAT_LABELS[cat])||cat,
+        catKey:cat,
+        isCustom:false
+      });
+    });
+  });
+
+  // 2. Session custom items (always searchable after being added)
+  Object.keys(customItems).forEach(function(key){
+    var ci=customItems[key];
+    var catLabel=ci.cat?(CAT_LABELS[ci.cat]||ci.cat):'Custom';
+    allItems.push({
+      key:key,
+      name:ci.name,
+      nameEN:ci.name,
+      cat:catLabel,
+      catKey:ci.cat||'custom',
+      isCustom:true
+    });
+  });
+}
+
+// ==========================================
+//  SEARCH UI
+// ==========================================
+function onSearch(val) {
+  var box=document.getElementById('suggestions');
+  var clr=document.getElementById('srch-clear');
+  val=val.trim();
+  if(!val){box.classList.remove('open');clr.classList.remove('show');return;}
+  clr.classList.add('show');
+
+  var lo=val.toLowerCase()
+    .replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i')
+    .replace(/[óòö]/g,'o').replace(/[úùü]/g,'u').replace(/ñ/g,'n');
+
+  var matches=allItems.filter(function(it){
+    var n=it.name.toLowerCase()
+      .replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i')
+      .replace(/[óòö]/g,'o').replace(/[úùü]/g,'u').replace(/ñ/g,'n');
+    var en=it.nameEN.toLowerCase();
+    var c=it.cat.toLowerCase();
+    return n.indexOf(lo)!==-1 || en.indexOf(lo)!==-1 || c.indexOf(lo)!==-1;
+  }).slice(0,25);
+
+  box.innerHTML='';
+  if(!matches.length){
+    // Show "add as new item" option
+    var emp=document.createElement('div');
+    emp.className='sug-empty';
+    emp.textContent='No results. Press + below to add "'+val+'" as new item.';
+    box.appendChild(emp);
+  } else {
+    matches.forEach(function(it){
+      var qty=it.isCustom?(customItems[it.key]?customItems[it.key].qty:0):(quantities[it.key]||0);
+      var div=document.createElement('div');
+      div.className='sug-item';
+      div.dataset.key=it.key;
+      div.dataset.name=it.name;
+
+      var sn=document.createElement('span'); sn.className='sug-name'; sn.textContent=it.name;
+      var sc=document.createElement('span'); sc.className='sug-cat'; sc.textContent=it.cat;
+      var sk=it.key.replace(/[^a-z0-9]/gi,'_');
+      var sb=document.createElement('span');
+      sb.className=qty>0?'sug-badge has':'sug-badge';
+      sb.id='sb-'+sk;
+      sb.textContent=qty>0?'x'+qty:'+';
+
+      div.appendChild(sn); div.appendChild(sc); div.appendChild(sb);
+      div.addEventListener('click',function(){
+        selectItem(this.dataset.key, this.dataset.name, it.isCustom);
+      });
+      box.appendChild(div);
+    });
+  }
+  box.classList.add('open');
+}
+
+function clearSearch(){
+  document.getElementById('search-input').value='';
+  document.getElementById('suggestions').classList.remove('open');
+  document.getElementById('srch-clear').classList.remove('show');
+}
+
+document.addEventListener('click',function(e){
+  var w=document.getElementById('srch-wrap');
+  if(w&&!w.contains(e.target)) document.getElementById('suggestions').classList.remove('open');
+});
+
+// ==========================================
+//  SELECT ITEM (catalog or custom)
+// ==========================================
+function selectItem(key, displayName, isCustom) {
+  if(isCustom){
+    if(customItems[key]) customItems[key].qty++;
+    else customItems[key]={qty:1,name:displayName,cat:null};
+  } else {
+    quantities[key]=(quantities[key]||0)+1;
+  }
+  var sk=key.replace(/[^a-z0-9]/gi,'_');
+  var badge=document.getElementById('sb-'+sk);
+  var qty=isCustom?(customItems[key]?customItems[key].qty:0):(quantities[key]||0);
+  if(badge){badge.textContent='x'+qty;badge.className='sug-badge has';}
+  renderSelectedList();
+  clearSearch();
+}
+
+// ==========================================
+//  QTY CHANGES
+// ==========================================
+function changeSelQty(key,delta){
+  quantities[key]=Math.max(0,(quantities[key]||0)+delta);
+  if(quantities[key]===0) delete quantities[key];
+  renderSelectedList();
+}
+function changeCustomQty(key,delta){
+  if(!customItems[key]) return;
+  customItems[key].qty=Math.max(0,customItems[key].qty+delta);
+  if(customItems[key].qty===0) delete customItems[key];
+  buildSearchIndex(); // keep index in sync
+  renderSelectedList();
+}
+function removeItem(key,isCustom){
+  if(isCustom) delete customItems[key];
+  else delete quantities[key];
+  buildSearchIndex();
+  renderSelectedList();
+}
+
+// ==========================================
+//  RENDER SELECTED LIST
+// ==========================================
+function renderSelectedList() {
+  var list=document.getElementById('selected-list');
+  var title=document.getElementById('sel-title');
+  var useES=currentLang==='es';
+  var items=[];
+
+  // Catalog items
+  Object.keys(PRODUCTS).forEach(function(cat){
+    var en=PRODUCTS[cat], es=PRODUCTS_ES[cat]||en;
+    en.forEach(function(nameEN,i){
+      var key=cat+'_'+nameEN;
+      if(quantities[key]>0){
+        var display=useES?(es[i]||nameEN):nameEN;
+        var catLabel=(useES?CAT_LABELS_ES[cat]:CAT_LABELS[cat])||cat;
+        items.push({key:key,name:display,qty:quantities[key],cat:catLabel,isCustom:false});
+      }
+    });
+  });
+
+  // Custom items (session-added)
+  Object.keys(customItems).forEach(function(key){
+    var ci=customItems[key];
+    if(ci.qty>0){
+      var catLabel=ci.cat?(CAT_LABELS[ci.cat]||ci.cat):'Custom';
+      items.push({key:key,name:ci.name,qty:ci.qty,cat:catLabel,isCustom:true});
+    }
+  });
+
+  title.textContent='Selected Items ('+items.length+')';
+
+  if(!items.length){
+    list.innerHTML='<div class="sel-empty">No items selected yet - search above to add</div>';
+    return;
+  }
+
+  list.innerHTML='';
+  items.forEach(function(it){
+    var row=document.createElement('div'); row.className='sel-item';
+    var ctrl=document.createElement('div'); ctrl.className='sel-qty-ctrl';
+
+    var btnM=document.createElement('button');
+    btnM.className='sel-qty-btn sel-minus'; btnM.textContent='-';
+    btnM.addEventListener('click',(function(k,c){return function(){c?changeCustomQty(k,-1):changeSelQty(k,-1);};})(it.key,it.isCustom));
+
+    var num=document.createElement('span'); num.className='sel-num'; num.textContent=it.qty;
+
+    var btnP=document.createElement('button');
+    btnP.className='sel-qty-btn sel-plus'; btnP.textContent='+';
+    btnP.addEventListener('click',(function(k,c){return function(){c?changeCustomQty(k,1):changeSelQty(k,1);};})(it.key,it.isCustom));
+
+    ctrl.appendChild(btnM); ctrl.appendChild(num); ctrl.appendChild(btnP);
+
+    var nameSpan=document.createElement('span'); nameSpan.className='sel-name'; nameSpan.textContent=it.name;
+    var catSpan=document.createElement('span'); catSpan.className='sel-cat-tag'; catSpan.textContent=it.cat;
+
+    var rm=document.createElement('button'); rm.className='sel-remove'; rm.textContent='x'; rm.title='Remove';
+    rm.addEventListener('click',(function(k,c){return function(){removeItem(k,c);};})(it.key,it.isCustom));
+
+    row.appendChild(ctrl); row.appendChild(nameSpan); row.appendChild(catSpan); row.appendChild(rm);
+    list.appendChild(row);
+  });
+}
+
+// ==========================================
+//  ADD CUSTOM ITEM
+//  1. Try to find existing catalog match
+//  2. Try to classify by keywords
+//  3. Save to customItems (persists in session + searchable)
+// ==========================================
+function addCustomItem(){
+  var input=document.getElementById('custom-input');
+  var val=input.value.trim();
+  if(!val) return;
+
+  var lo=val.toLowerCase()
+    .replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i')
+    .replace(/[óòö]/g,'o').replace(/[úùü]/g,'u').replace(/ñ/g,'n');
+
+  // 1. Check if matches an existing catalog item (fuzzy)
+  var exactMatch=null;
+  Object.keys(PRODUCTS).forEach(function(cat){
+    PRODUCTS[cat].forEach(function(nameEN){
+      var n=nameEN.toLowerCase()
+        .replace(/[áàä]/g,'a').replace(/[éèë]/g,'e');
+      if(n.indexOf(lo)!==-1 || lo.indexOf(n)!==-1){
+        if(!exactMatch) exactMatch=cat+'_'+nameEN;
+      }
+    });
+  });
+  if(exactMatch){
+    quantities[exactMatch]=(quantities[exactMatch]||0)+1;
+    input.value='';
+    renderSelectedList();
+    return;
+  }
+
+  // 2. Check if already in customItems
+  var existingKey=null;
+  Object.keys(customItems).forEach(function(k){
+    if(customItems[k].name.toLowerCase()===val.toLowerCase()) existingKey=k;
+  });
+  if(existingKey){
+    customItems[existingKey].qty++;
+    input.value='';
+    renderSelectedList();
+    return;
+  }
+
+  // 3. Classify by keywords
+  var detectedCat=classifyItem(val);
+
+  // 4. Add to customItems (persists for session, searchable)
+  var key='custom_'+val.replace(/\s+/g,'_');
+  customItems[key]={qty:1, name:val, cat:detectedCat};
+
+  // Rebuild search index so this item is now searchable
+  buildSearchIndex();
+
+  input.value='';
+  renderSelectedList();
+}
+
+// ==========================================
+//  HOTEL PHOTO
+// ==========================================
+document.getElementById('input-main').addEventListener('change',function(e){
+  var f=e.target.files[0]; if(!f) return;
+  readFile(f,function(d){
+    var z=document.getElementById('zone-main');
+    z._data=d;
+    document.getElementById('ph-main').style.display='none';
+    var img=z.querySelector('img');
+    if(!img){img=document.createElement('img');z.appendChild(img);}
+    img.src=d;
+  });
+  this.value='';
+});
+
+// ==========================================
+//  PHOTO UPLOADS
+// ==========================================
+document.getElementById('add-gallery').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;addPhoto(f);this.value='';});
+document.getElementById('add-camera').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;addPhoto(f);this.value='';});
+
+function readFile(file,cb){var r=new FileReader();r.onload=function(ev){cb(ev.target.result);};r.readAsDataURL(file);}
+
+function addPhoto(file){
+  readFile(file,function(data){
+    var idx=slots.length;
+    var item=document.createElement('div');item.className='photo-item';
+    var nb=document.createElement('div');nb.className='num';nb.textContent=idx+1;
+    var fi=document.createElement('input');fi.type='file';fi.accept='image/*';
+    fi.style.cssText='position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;font-size:16px;z-index:5;';
+    var rb=document.createElement('button');rb.className='rm-btn';rb.innerHTML='&times;';rb.style.zIndex='20';
+    var img=document.createElement('img');img.src=data;
+    item.appendChild(img);item.appendChild(nb);item.appendChild(fi);item.appendChild(rb);
+    var slot={item:item,data:data,img:img};
+    slots.push(slot);
+    fi.addEventListener('change',function(e){var f2=e.target.files[0];if(!f2)return;readFile(f2,function(d){slot.data=d;img.src=d;});this.value='';});
+    rb.addEventListener('click',function(e){
+      e.stopPropagation();e.preventDefault();
+      item.parentNode.removeChild(item);
+      slots.splice(slots.indexOf(slot),1);
+      slots.forEach(function(s,i){s.item.querySelector('.num').textContent=i+1;});
+    });
+    document.getElementById('photos-grid').appendChild(item);
+    document.getElementById('photo-required').classList.remove('show');
+  });
+}
+
+// ==========================================
+//  CANVAS HELPERS
+// ==========================================
+function loadImg(src){return new Promise(function(res,rej){var i=new Image();i.onload=function(){res(i);};i.onerror=rej;i.src=src;});}
+function drawCover(ctx,img,x,y,w,h){var ir=img.width/img.height,br=w/h,sx,sy,sw,sh;if(ir>br){sh=img.height;sw=sh*br;sx=(img.width-sw)/2;sy=0;}else{sw=img.width;sh=sw/br;sx=0;sy=(img.height-sh)/2;}ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h);}
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
+
+// Draw emoji reliably via offscreen canvas
+function drawEmoji(ctx,emoji,size,x,y){
+  var tmp=document.createElement('canvas');
+  tmp.width=size*2;tmp.height=size*2;
+  var tc=tmp.getContext('2d');
+  tc.font=size+'px sans-serif';
+  tc.textBaseline='middle';tc.textAlign='center';
+  tc.fillText(emoji,size,size+2);
+  ctx.drawImage(tmp,x-size/2,y-size/2,size,size);
+}
+
+// ==========================================
+//  BUILD CANVAS (9:16, fills phone screen)
+// ==========================================
+async function buildCanvas(){
+  // Collect selected items in display order — always English for export
+  var selected=[];
+  Object.keys(PRODUCTS).forEach(function(cat){
+    PRODUCTS[cat].forEach(function(nameEN){
+      var key=cat+'_'+nameEN;
+      if(quantities[key]>0)
+        selected.push({name:nameEN,qty:quantities[key],cat:CAT_LABELS[cat]||cat,catKey:cat});
+    });
+  });
+  Object.keys(customItems).forEach(function(key){
+    var ci=customItems[key];
+    if(ci.qty>0){
+      var catKey=ci.cat||'custom';
+      var catLabel=ci.cat?(CAT_LABELS[ci.cat]||ci.cat):'Custom';
+      selected.push({name:ci.name,qty:ci.qty,cat:catLabel,catKey:catKey});
+    }
+  });
+
+  var personName=document.getElementById('input-name').value.trim();
+  var room=document.getElementById('input-room').value.trim();
+  var typeLabel=requesterType==='hk'?'Housekeeping':'Guest';
+  var typeColor=requesterType==='hk'?'#0f3460':'#92400e';
+  var typeBg=requesterType==='hk'?'#dbeafe':'#fef3c7';
+  var n=slots.length;
+
+  // Canvas: 1080x1920 (9:16) at 2x retina
+  var SC=2, W=1080, H=1920, PAD=36, GAP=10;
+  var HDRH=120, INFH=150, FTRH=72;
+  var ICOLS=2, CAT_H=44, ITEM_H=58;
+  var colW=Math.floor((W-PAD*2-GAP)/2);
+
+  // Photos
+  var PCOLS=3, PCW=Math.floor((W-PAD*2-GAP*(PCOLS-1))/PCOLS), PCH=Math.round(PCW*0.72);
+  var PROWS=Math.ceil(n/PCOLS);
+  var PHOTO_H=n>0?44+PROWS*PCH+(PROWS-1)*GAP:0;
+
+  // Items height
+  var uCats=[];
+  selected.forEach(function(s){if(uCats.indexOf(s.cat)===-1)uCats.push(s.cat);});
+  var totalItemRows=0;
+  uCats.forEach(function(cat){
+    var cnt=selected.filter(function(s){return s.cat===cat;}).length;
+    totalItemRows+=Math.ceil(cnt/ICOLS);
+  });
+  var ITEMS_H=selected.length>0?68+uCats.length*CAT_H+totalItemRows*ITEM_H+16:80;
+
+  // Hotel photo: fill remaining vertical space
+  var fixed=HDRH+PAD+INFH+GAP+ITEMS_H+(PHOTO_H>0?GAP+PHOTO_H:0)+GAP+FTRH+PAD;
+  var MAPH=H-fixed-GAP;
+  var mz=document.getElementById('zone-main');
+  var hasPhoto=mz._data&&MAPH>=120;
+  if(!hasPhoto)MAPH=0;
+
+  // If space tight, reduce MAPH to minimum
+  if(hasPhoto&&MAPH>460)MAPH=460;
+
+  // Recalc H to always be exactly 1920
+  // (content fills the space, footer is pinned to bottom)
+
+  var canvas=document.getElementById('canvas-out');
+  canvas.width=W*SC; canvas.height=H*SC;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  var ctx=canvas.getContext('2d');
+  ctx.scale(SC,SC);
+  ctx.imageSmoothingEnabled=true;
+  ctx.imageSmoothingQuality='high';
+
+  // BACKGROUND: dark top/bottom to blend with phone bezel
+  var bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#071220');
+  bg.addColorStop(0.055,'#f0f4f8');
+  bg.addColorStop(0.945,'#f0f4f8');
+  bg.addColorStop(1,'#071220');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  // HEADER
+  var hg=ctx.createLinearGradient(0,0,W,HDRH);
+  hg.addColorStop(0,'#0a2040'); hg.addColorStop(1,'#1a4a80');
+  ctx.fillStyle=hg; ctx.fillRect(0,0,W,HDRH);
+
+  // Hotel icon (offscreen emoji)
+  var iconX=PAD+38, iconY=HDRH/2;
+  ctx.fillStyle='rgba(255,255,255,0.15)';
+  ctx.beginPath(); ctx.arc(iconX,iconY,32,0,Math.PI*2); ctx.fill();
+  drawEmoji(ctx,'🏨',44,iconX,iconY);
+
+  // Hotel name + subtitle
+  var tx=PAD+82;
+  ctx.fillStyle='#ffffff'; ctx.font='800 34px sans-serif';
+  ctx.textBaseline='middle'; ctx.textAlign='left';
+  ctx.fillText('Hyde House Hotel',tx,HDRH/2-16);
+  ctx.fillStyle='#60a5fa'; ctx.fillRect(tx,HDRH/2+3,4,22);
+  ctx.fillStyle='#93c5fd'; ctx.font='600 18px sans-serif';
+  ctx.fillText('Hotel Supplies Request',tx+12,HDRH/2+16);
+
+  // Date + time right
+  ctx.fillStyle='#bfdbfe'; ctx.font='600 15px sans-serif';
+  ctx.textAlign='right'; ctx.fillText(getFecha(),W-PAD,HDRH/2-16);
+  ctx.fillStyle='#ffffff'; ctx.font='800 26px sans-serif';
+  ctx.fillText(getTimeStr(),W-PAD,HDRH/2+16);
+  ctx.textAlign='left';
+
+  var curY=HDRH+PAD;
+
+  // HOTEL PHOTO
+  if(hasPhoto&&mz._data){
+    var mi=await loadImg(mz._data);
+    ctx.save(); ctx.beginPath(); rr(ctx,PAD,curY,W-PAD*2,MAPH,14); ctx.clip();
+    drawCover(ctx,mi,PAD,curY,W-PAD*2,MAPH); ctx.restore();
+    var ov=ctx.createLinearGradient(0,curY+MAPH-50,0,curY+MAPH);
+    ov.addColorStop(0,'rgba(0,0,0,0)'); ov.addColorStop(1,'rgba(0,0,0,0.15)');
+    ctx.save(); ctx.beginPath(); rr(ctx,PAD,curY,W-PAD*2,MAPH,14); ctx.clip();
+    ctx.fillStyle=ov; ctx.fillRect(PAD,curY,W-PAD*2,MAPH); ctx.restore();
+    curY+=MAPH+GAP;
+  }
+
+  // INFO BAR
+  var infoY=curY;
+  ctx.fillStyle='#ffffff'; rr(ctx,PAD,infoY,W-PAD*2,INFH,12); ctx.fill();
+  ctx.strokeStyle='#dbeafe'; ctx.lineWidth=1.5;
+  rr(ctx,PAD,infoY,W-PAD*2,INFH,12); ctx.stroke();
+  ctx.fillStyle='#0f3460'; ctx.fillRect(PAD,infoY,5,INFH);
+
+  ctx.fillStyle=typeBg; rr(ctx,PAD+18,infoY+14,200,42,21); ctx.fill();
+  ctx.fillStyle=typeColor; ctx.font='700 19px sans-serif';
+  ctx.textBaseline='middle'; ctx.textAlign='center';
+  ctx.fillText(typeLabel,PAD+18+100,infoY+35);
+  ctx.textAlign='left';
+
+  ctx.fillStyle='#0a1628'; ctx.font='800 32px sans-serif';
+  ctx.textBaseline='middle';
+  ctx.fillText(personName||'-',PAD+234,infoY+35);
+
+  ctx.fillStyle='#0f3460'; ctx.font='700 22px sans-serif';
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  ctx.fillText(selected.length+' items requested',W-PAD-16,infoY+35);
+  ctx.textAlign='left';
+
+  // Room plate
+  var rX=PAD+18,rY=infoY+70,rW=200,rH=56;
+  ctx.fillStyle='#1e293b'; rr(ctx,rX,rY,rW,rH,10); ctx.fill();
+  ctx.fillStyle='#94a3b8'; ctx.font='700 13px sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  ctx.fillText('ROOM',rX+rW/2,rY+6);
+  ctx.fillStyle='#ffffff'; ctx.font='800 28px sans-serif';
+  ctx.textBaseline='middle'; ctx.fillText(room||'-',rX+rW/2,rY+rH/2+5);
+  ctx.textAlign='left';
+  ctx.fillStyle='#64748b'; ctx.font='600 17px sans-serif';
+  ctx.textBaseline='middle'; ctx.textAlign='right';
+  ctx.fillText(getFecha(),W-PAD-16,infoY+99);
+  ctx.textAlign='left';
+
+  curY=infoY+INFH+GAP;
+
+  // ITEMS SECTION
+  var itemsY=curY;
+  ctx.fillStyle='#ffffff'; rr(ctx,PAD,itemsY,W-PAD*2,ITEMS_H,12); ctx.fill();
+  ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1;
+  rr(ctx,PAD,itemsY,W-PAD*2,ITEMS_H,12); ctx.stroke();
+
+  // Items header
+  var ibg=ctx.createLinearGradient(0,itemsY,W,itemsY+62);
+  ibg.addColorStop(0,'#0a2040'); ibg.addColorStop(1,'#0f3460');
+  ctx.fillStyle=ibg;
+  ctx.save(); ctx.beginPath();
+  ctx.moveTo(PAD+12,itemsY); ctx.lineTo(W-PAD-12,itemsY);
+  ctx.quadraticCurveTo(W-PAD,itemsY,W-PAD,itemsY+12);
+  ctx.lineTo(W-PAD,itemsY+62); ctx.lineTo(PAD,itemsY+62);
+  ctx.lineTo(PAD,itemsY+12);
+  ctx.quadraticCurveTo(PAD,itemsY,PAD+12,itemsY);
+  ctx.closePath(); ctx.fill(); ctx.restore();
+
+  ctx.fillStyle='#ffffff'; ctx.font='800 24px sans-serif';
+  ctx.textBaseline='middle'; ctx.textAlign='left';
+  ctx.fillText('Items Requested',PAD+18,itemsY+31);
+  ctx.fillStyle='#93c5fd'; ctx.font='600 19px sans-serif';
+  ctx.textAlign='right';
+  ctx.fillText(selected.length+' item'+(selected.length!==1?'s':''),W-PAD-18,itemsY+31);
+  ctx.textAlign='left';
+
+  if(!selected.length){
+    ctx.fillStyle='#94a3b8'; ctx.font='20px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('No items selected',W/2,itemsY+ITEMS_H/2+16);
+    ctx.textAlign='left';
+  } else {
+    var cy=itemsY+68;
+    var colIdx=0, rowCount=0;
+    for(var i=0;i<selected.length;i++){
+      if(i===0||selected[i].cat!==selected[i-1].cat){
+        if(colIdx>0){cy+=ITEM_H;colIdx=0;}
+        rowCount=0;
+        var cg=ctx.createLinearGradient(PAD+8,cy,W-PAD-8,cy);
+        cg.addColorStop(0,'#1e3a5f'); cg.addColorStop(1,'#0f3460');
+        ctx.fillStyle=cg; ctx.fillRect(PAD+8,cy,W-PAD*2-16,CAT_H);
+        ctx.fillStyle='#60a5fa'; ctx.fillRect(PAD+8,cy,4,CAT_H);
+        ctx.fillStyle='#ffffff'; ctx.font='700 19px sans-serif';
+        ctx.textBaseline='middle'; ctx.textAlign='left';
+        ctx.fillText(selected[i].cat,PAD+18,cy+CAT_H/2);
+        cy+=CAT_H; colIdx=0;
+      }
+      var col=colIdx%ICOLS;
+      if(col===0){
+        ctx.fillStyle=(rowCount%2===0)?'#f0f6ff':'#ffffff';
+        ctx.fillRect(PAD+8,cy,W-PAD*2-16,ITEM_H);
+      }
+      var ix=PAD+16+col*(colW+GAP), iy=cy;
+      ctx.fillStyle='#0f3460'; rr(ctx,ix,iy+Math.floor((ITEM_H-40)/2),62,40,8); ctx.fill();
+      ctx.fillStyle='#ffffff'; ctx.font='800 22px sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('x'+selected[i].qty,ix+31,iy+ITEM_H/2);
+      ctx.textAlign='left';
+      ctx.fillStyle='#0a1628'; ctx.font='700 19px sans-serif';
+      ctx.textBaseline='middle';
+      var mxW=colW-74;
+      var nm=selected[i].name;
+      while(ctx.measureText(nm).width>mxW&&nm.length>3)nm=nm.slice(0,-1);
+      if(nm!==selected[i].name)nm+='...';
+      ctx.fillText(nm,ix+70,iy+ITEM_H/2);
+      ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=0.8;
+      ctx.beginPath(); ctx.moveTo(PAD+8,iy+ITEM_H); ctx.lineTo(W-PAD-8,iy+ITEM_H); ctx.stroke();
+      colIdx++;
+      if(colIdx%ICOLS===0){cy+=ITEM_H;rowCount++;}
+    }
+    if(colIdx%ICOLS!==0)cy+=ITEM_H;
+  }
+
+  curY=itemsY+ITEMS_H+GAP;
+
+  // PHOTOS
+  if(PHOTO_H>0){
+    ctx.fillStyle='#0f3460'; ctx.font='700 22px sans-serif';
+    ctx.textBaseline='middle'; ctx.textAlign='left';
+    ctx.fillText('Photos ('+n+')',PAD,curY+20);
+    curY+=44;
+    for(var j=0;j<n;j++){
+      var pc=j%PCOLS,pr=Math.floor(j/PCOLS);
+      var px=PAD+pc*(PCW+GAP),py=curY+pr*(PCH+GAP);
+      ctx.save();
+      ctx.shadowColor='rgba(0,0,0,0.15)'; ctx.shadowBlur=8; ctx.shadowOffsetY=3;
+      ctx.fillStyle='#fff'; rr(ctx,px,py,PCW,PCH,10); ctx.fill();
+      ctx.restore();
+      var pi=await loadImg(slots[j].data);
+      ctx.save(); ctx.beginPath(); rr(ctx,px,py,PCW,PCH,10); ctx.clip();
+      drawCover(ctx,pi,px,py,PCW,PCH); ctx.restore();
+      ctx.fillStyle='rgba(10,32,64,0.88)';
+      ctx.beginPath(); ctx.arc(px+24,py+24,18,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#fff'; ctx.font='800 17px sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(j+1,px+24,py+24); ctx.textAlign='left';
+    }
+  }
+
+  // FOOTER (pinned to bottom of 9:16)
+  var footY=H-FTRH-PAD;
+  var fg=ctx.createLinearGradient(0,footY,W,footY+FTRH);
+  fg.addColorStop(0,'#eff6ff'); fg.addColorStop(1,'#dbeafe');
+  ctx.fillStyle=fg; ctx.fillRect(0,footY,W,FTRH+PAD);
+  ctx.strokeStyle='#bfdbfe'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(0,footY); ctx.lineTo(W,footY); ctx.stroke();
+  ctx.fillStyle='#0f3460'; ctx.font='700 22px sans-serif';
+  ctx.textBaseline='middle'; ctx.textAlign='center';
+  ctx.fillText('Supplies Request - '+selected.length+' items | Exported '+getTimeStr(),W/2,footY+FTRH/2);
+
+  return canvas;
+}
+
+// ==========================================
+//  EXPORT
+// ==========================================
+async function generarReporte(modo){
+  var msg=document.getElementById('msg');
+  msg.className='msg'; msg.textContent='';
+  if(!slots.length){
+    document.getElementById('photo-required').classList.add('show');
+    msg.textContent='At least one photo is required.'; msg.className='msg error'; return;
+  }
+  var hasItems=Object.keys(quantities).some(function(k){return quantities[k]>0;})||
+               Object.keys(customItems).some(function(k){return customItems[k]&&customItems[k].qty>0;});
+  if(!hasItems){msg.textContent='Please select at least one supply item.';msg.className='msg error';return;}
+  msg.textContent='Generating report... please wait.';
+  try{
+    var canvas=await buildCanvas();
+    canvas.toBlob(async function(blob){
+      var fname='supplies-request-'+new Date().toISOString().slice(0,10)+'.jpg';
+      var file=new File([blob],fname,{type:'image/jpeg'});
+      if(modo==='share'&&navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+        try{
+          await navigator.share({files:[file],title:'Supplies Request',text:'Hyde House Hotel - Supplies Request - '+getFecha()});
+          msg.textContent='Report shared!'; msg.className='msg ok';
+        }catch(e){
+          if(e.name!=='AbortError')doDownload(blob,fname,msg);
+          else msg.textContent='Cancelled.';
+        }
+      } else doDownload(blob,fname,msg);
+    },'image/jpeg',0.96);
+  }catch(e){msg.textContent='Error: '+e.message;msg.className='msg error';}
+}
+
+function doDownload(blob,fname,msg){
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download=fname;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  msg.textContent='Downloaded! Share to WhatsApp from Files > Downloads.';
+  msg.className='msg ok';
+}
+
+// -- INIT --
+buildSearchIndex();
+renderSelectedList();
+</script>
+
+</body>
+</html>
